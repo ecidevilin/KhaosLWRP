@@ -1094,7 +1094,6 @@ namespace UnityEngine.Rendering.PostProcessing
                 if (antialiasingMode == Antialiasing.FastApproximateAntialiasing && !fastApproximateAntialiasing.keepAlpha)
                     uberSheet.properties.SetFloat(ShaderIDs.LumaInAlpha, 1f);
             }
-            RenderEffect<AmbientOcclusion>(context);
 
             // Depth of field final combination pass used to be done in Uber which led to artifacts
             // when used at the same time as Bloom (because both effects used the same source, so
