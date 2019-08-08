@@ -68,7 +68,7 @@ namespace UnityEngine.Rendering.PostProcessing
     /// This class holds settings for the Ambient Occlusion effect.
     /// </summary>
     [Serializable]
-    [PostProcess(typeof(AmbientOcclusionRenderer), "Unity/Ambient Occlusion")]
+    [PostProcess(typeof(AmbientOcclusionRenderer), PostProcessEvent.BeforeTransparent, "Unity/Ambient Occlusion")]
     public sealed class AmbientOcclusion : PostProcessEffectSettings
     {
         // Shared parameters
@@ -260,6 +260,17 @@ namespace UnityEngine.Rendering.PostProcessing
         // Unused
         public override void Render(PostProcessRenderContext context)
         {
+            if (RuntimeUtilities.scriptableRenderPipelineActive)
+            {
+                if (settings.mode == AmbientOcclusionMode.ScalableAmbientObscurance)
+                {
+                    return;
+                }
+                if (context.camera.actualRenderingPath == RenderingPath.Forward)
+                {
+                    GetMultiScaleVO().RenderAfterOpaque(context);
+                }
+            }
         }
     }
 }

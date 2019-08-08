@@ -492,7 +492,7 @@ namespace UnityEngine.Rendering.PostProcessing
             GenerateAOMap(cmd, context.camera, m_AmbientOnlyAO, null, false, false);
             PushDebug(context);
             cmd.SetGlobalTexture(ShaderIDs.MSVOcclusionTexture, m_AmbientOnlyAO);
-            cmd.BlitFullscreenTriangle(BuiltinRenderTextureType.None, BuiltinRenderTextureType.CameraTarget, m_PropertySheet, (int)Pass.CompositionForward, RenderBufferLoadAction.Load);
+            cmd.BlitFullscreenTriangle(context.source, context.destination, m_PropertySheet, (int)Pass.CompositionForward, RenderBufferLoadAction.Load);
             cmd.EndSample("Ambient Occlusion");
         }
 

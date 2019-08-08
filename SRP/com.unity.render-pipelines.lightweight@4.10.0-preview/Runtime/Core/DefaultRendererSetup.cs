@@ -87,6 +87,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             Init();
 
             Camera camera = renderingData.cameraData.camera;
+            renderer.postProcessingContext.camera = camera;
             camera.GetComponents(m_BeforeRenderPasses);
 
             renderer.SetupPerObjectLightIndices(ref renderingData.cullResults, ref renderingData.lightData);
@@ -172,14 +173,17 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             foreach (var pass in camera.GetComponents<IAfterOpaquePass>())
                 renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));
 
-            if (renderingData.cameraData.postProcessEnabled &&
-                renderingData.cameraData.postProcessLayer.HasOpaqueOnlyEffects(renderer.postProcessingContext))
+            if (renderingData.cameraData.postProcessEnabled)
             {
-                m_OpaquePostProcessPass.Setup(baseDescriptor, colorHandle);
-                renderer.EnqueuePass(m_OpaquePostProcessPass);
+                renderingData.cameraData.postProcessLayer.SetupContext(renderer.postProcessingContext);
+                if (renderingData.cameraData.postProcessLayer.HasOpaqueOnlyEffects(renderer.postProcessingContext))
+                {
+                    m_OpaquePostProcessPass.Setup(baseDescriptor, colorHandle);
+                    renderer.EnqueuePass(m_OpaquePostProcessPass);
 
-                foreach (var pass in camera.GetComponents<IAfterOpaquePostProcess>())
-                    renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));
+                    foreach (var pass in camera.GetComponents<IAfterOpaquePostProcess>())
+                        renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));
+                }
             }
 
             if (camera.clearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null)
