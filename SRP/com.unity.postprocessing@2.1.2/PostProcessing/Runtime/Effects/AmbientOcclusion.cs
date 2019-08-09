@@ -264,6 +264,7 @@ namespace UnityEngine.Rendering.PostProcessing
             {
                 if (context.camera.actualRenderingPath == RenderingPath.Forward)
                 {
+                    //TODO: CameraDepthNormalTexture for ScalableAO
                     Get().RenderAfterOpaque(context);
                 }
             }
