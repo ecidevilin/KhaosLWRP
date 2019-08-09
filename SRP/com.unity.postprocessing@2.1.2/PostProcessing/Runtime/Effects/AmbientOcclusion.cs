@@ -163,7 +163,7 @@ namespace UnityEngine.Rendering.PostProcessing
 
             if (mode.value == AmbientOcclusionMode.ScalableAmbientObscurance)
             {
-                state &= !RuntimeUtilities.scriptableRenderPipelineActive;
+                //state &= !RuntimeUtilities.scriptableRenderPipelineActive;
 
                 if (context != null)
                 {
@@ -262,13 +262,9 @@ namespace UnityEngine.Rendering.PostProcessing
         {
             if (RuntimeUtilities.scriptableRenderPipelineActive)
             {
-                if (settings.mode == AmbientOcclusionMode.ScalableAmbientObscurance)
-                {
-                    return;
-                }
                 if (context.camera.actualRenderingPath == RenderingPath.Forward)
                 {
-                    GetMultiScaleVO().RenderAfterOpaque(context);
+                    Get().RenderAfterOpaque(context);
                 }
             }
         }

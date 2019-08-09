@@ -862,7 +862,9 @@ MonoBehaviour:
   m_ShowToolkit: 1
   m_ShowCustomSorter: 1
   breakBeforeColorGrading: 0
-  m_BeforeTransparentBundles: []
+  m_BeforeTransparentBundles:
+  - assemblyQualifiedName: UnityEngine.Rendering.PostProcessing.AmbientOcclusion,
+      Unity.Postprocessing.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_BeforeStackBundles: []
   m_AfterStackBundles: []
 --- !u!1 &1904166338

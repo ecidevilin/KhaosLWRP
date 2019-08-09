@@ -32,11 +32,11 @@ namespace UnityEditor.Rendering.PostProcessing
             PropertyField(m_Mode);
             int aoMode = m_Mode.value.intValue;
 
-            if (RuntimeUtilities.scriptableRenderPipelineActive && aoMode == (int)AmbientOcclusionMode.ScalableAmbientObscurance)
-            {
-                EditorGUILayout.HelpBox("Scalable ambient obscurance doesn't work with scriptable render pipelines.", MessageType.Warning);
-                return;
-            }
+            //if (RuntimeUtilities.scriptableRenderPipelineActive && aoMode == (int)AmbientOcclusionMode.ScalableAmbientObscurance)
+            //{
+            //    EditorGUILayout.HelpBox("Scalable ambient obscurance doesn't work with scriptable render pipelines.", MessageType.Warning);
+            //    return;
+            //}
 
 #if !UNITY_2017_1_OR_NEWER
             if (aoMode == (int)AmbientOcclusionMode.MultiScaleVolumetricObscurance)
