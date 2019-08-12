@@ -3,22 +3,18 @@ using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
-    /// <summary>
-    /// Render all objects that have a 'DepthOnly' pass into the given depth buffer.
-    ///
-    /// You can use this pass to prime a depth buffer for subsequent rendering.
-    /// Use it as a z-prepass, or use it to generate a depth buffer.
-    /// </summary>
     public class DepthNormalPass : ScriptableRenderPass
     {
         const string k_DepthNormalTag = "Depth Normal Pass";
 
-        int kDepthBufferBits = 32;
+        int kDepthBufferBits = 16;
         
         private FilterRenderersSettings opaqueFilterSettings { get; set; }
 
-        private RenderTargetHandle destination { get; set; }
+        private RenderTargetHandle depthNormalsHandle { get; set; }
+        private RenderTargetHandle depthAttachmentHandle { get; set; }
         private RenderTextureDescriptor descriptor { get; set; }
+        private bool isDepthPrepassEnabled;
 
         /// <summary>
         /// Create the DepthOnlyPass
@@ -36,12 +32,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         /// Configure the pass
         /// </summary>
         public void Setup(
-            RenderTextureDescriptor baseDescriptor, RenderTargetHandle destination)
+            RenderTextureDescriptor baseDescriptor, RenderTargetHandle depthNormalsHandle, RenderTargetHandle depthAttachmentHandle, bool depthPrepass)
         {
-            this.destination = destination;
-            baseDescriptor.depthBufferBits = kDepthBufferBits;
+            this.depthNormalsHandle = depthNormalsHandle;
+            this.depthAttachmentHandle = depthAttachmentHandle;
+            baseDescriptor.depthBufferBits = depthPrepass ? 0 : kDepthBufferBits;
             baseDescriptor.colorFormat = RenderTextureFormat.ARGB32;
             descriptor = baseDescriptor;
+            this.isDepthPrepassEnabled = depthPrepass;
         }
 
         /// <inheritdoc/>
@@ -53,16 +51,35 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             CommandBuffer cmd = CommandBufferPool.Get(k_DepthNormalTag);
             using (new ProfilingSample(cmd, k_DepthNormalTag))
             {
-                cmd.GetTemporaryRT(destination.id, descriptor, FilterMode.Bilinear);
-                SetRenderTarget(
-                    cmd,
-                    destination.Identifier(),
-                    RenderBufferLoadAction.DontCare,
-                    RenderBufferStoreAction.Store,
-                    ClearFlag.Color | ClearFlag.Depth,
-                    Color.black,
-                    TextureDimension.Tex2D);
-
+                cmd.GetTemporaryRT(depthNormalsHandle.id, descriptor, FilterMode.Bilinear);
+                
+                if (isDepthPrepassEnabled)
+                {
+                    SetRenderTarget(
+                        cmd,
+                        depthNormalsHandle.Identifier(),
+                        RenderBufferLoadAction.DontCare,
+                        RenderBufferStoreAction.Store,
+                        depthAttachmentHandle.Identifier(),
+                        RenderBufferLoadAction.Load,
+                        RenderBufferStoreAction.DontCare,
+                        ClearFlag.Color,
+                        Color.black,
+                        TextureDimension.Tex2D);
+                    cmd.DisableShaderKeyword("_ALPHATEST_ON");
+                }
+                else
+                {
+                    SetRenderTarget(
+                        cmd,
+                        depthNormalsHandle.Identifier(),
+                        RenderBufferLoadAction.DontCare,
+                        RenderBufferStoreAction.Store,
+                        ClearFlag.Color | ClearFlag.Depth,
+                        Color.black,
+                        TextureDimension.Tex2D);
+                    cmd.EnableShaderKeyword("_ALPHATEST_ON");
+                }
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
@@ -87,10 +104,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (cmd == null)
                 throw new ArgumentNullException("cmd");
-            if (destination != RenderTargetHandle.CameraTarget)
+            if (depthNormalsHandle != RenderTargetHandle.CameraTarget)
             {
-                cmd.ReleaseTemporaryRT(destination.id);
-                destination = RenderTargetHandle.CameraTarget;
+                cmd.ReleaseTemporaryRT(depthNormalsHandle.id);
+                depthNormalsHandle = RenderTargetHandle.CameraTarget;
             }
         }
     }

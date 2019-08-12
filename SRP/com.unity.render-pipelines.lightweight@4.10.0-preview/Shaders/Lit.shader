@@ -178,7 +178,7 @@ Shader "Lightweight Render Pipeline/Lit"
             ENDHLSL
         }
 
-			Pass
+		Pass
 		{
 			Name "DepthNormal"
 			Tags{"LightMode" = "DepthNormal"}
@@ -198,7 +198,7 @@ Shader "Lightweight Render Pipeline/Lit"
 
 			// -------------------------------------
 			// Material Keywords
-			#pragma shader_feature _ALPHATEST_ON
+			//#pragma shader_feature _ALPHATEST_ON
 			#pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
 
 			//--------------------------------------
