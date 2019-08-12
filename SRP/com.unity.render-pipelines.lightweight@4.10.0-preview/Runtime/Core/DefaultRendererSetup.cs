@@ -33,6 +33,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private RenderTargetHandle DepthAttachment;
         private RenderTargetHandle DepthTexture;
         private RenderTargetHandle OpaqueColor;
+        private RenderTargetHandle DepthNormalTexture;
         private RenderTargetHandle MainLightShadowmap;
         private RenderTargetHandle AdditionalLightsShadowmap;
         private RenderTargetHandle ScreenSpaceShadowmap;
@@ -75,6 +76,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             DepthAttachment.Init("_CameraDepthAttachment");
             DepthTexture.Init("_CameraDepthTexture");
             OpaqueColor.Init("_CameraOpaqueTexture");
+            DepthNormalTexture.Init("_CameraDepthNormalsTexture");
             MainLightShadowmap.Init("_MainLightShadowmapTexture");
             AdditionalLightsShadowmap.Init("_AdditionalLightsShadowmapTexture");
             ScreenSpaceShadowmap.Init("_ScreenSpaceShadowmapTexture");
@@ -149,6 +151,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 foreach (var pass in camera.GetComponents<IAfterDepthPrePass>())
                     renderer.EnqueuePass(pass.GetPassToEnqueue(m_DepthOnlyPass.descriptor, DepthTexture));
             }
+
+            DepthNormalPass depthNormalPass = new DepthNormalPass();
+            depthNormalPass.Setup(baseDescriptor, DepthNormalTexture);
+            renderer.EnqueuePass(depthNormalPass);
 
             if (resolveShadowsInScreenSpace)
             {
