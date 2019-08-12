@@ -57,6 +57,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public bool supportsCameraDepthTexture { get; private set; }
             public bool supportsCameraOpaqueTexture { get; private set; }
             public Downsampling opaqueDownsampling { get; private set; }
+            public bool supportsCameraDepthNormalsTexture { get; private set; }
             public bool supportsHDR { get; private set; }
             public int msaaSampleCount { get; private set; }
             public float renderScale { get; private set; }
@@ -84,6 +85,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cache.supportsCameraDepthTexture = asset.supportsCameraDepthTexture;
                 cache.supportsCameraOpaqueTexture = asset.supportsCameraOpaqueTexture;
                 cache.opaqueDownsampling = asset.opaqueDownsampling;
+                cache.supportsCameraDepthNormalsTexture = asset.supportsCameraDepthNormalsTexture;
 
                 // Quality settings
                 cache.msaaSampleCount = asset.msaaSampleCount;
@@ -303,6 +305,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
 
             cameraData.requiresDepthTexture |= cameraData.isSceneViewCamera || cameraData.postProcessEnabled;
+
+            cameraData.requiresDepthNormalsTexture = settings.supportsCameraDepthNormalsTexture; //TODO: additionalCameraData
 
             var commonOpaqueFlags = SortFlags.CommonOpaque;
             var noFrontToBackOpaqueFlags = SortFlags.SortingLayer | SortFlags.RenderQueue | SortFlags.OptimizeStateChanges | SortFlags.CanvasOrder;

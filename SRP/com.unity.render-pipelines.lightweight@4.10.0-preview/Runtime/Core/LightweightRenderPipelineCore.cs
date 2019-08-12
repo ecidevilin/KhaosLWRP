@@ -42,6 +42,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public bool requiresDepthTexture;
         public bool requiresOpaqueTexture;
         public Downsampling opaqueTextureDownsampling;
+        public bool requiresDepthNormalsTexture;
 
         public SortFlags defaultOpaqueSortFlags;
 

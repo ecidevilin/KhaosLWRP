@@ -78,6 +78,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         [SerializeField] bool m_RequireDepthTexture = false;
         [SerializeField] bool m_RequireOpaqueTexture = false;
         [SerializeField] Downsampling m_OpaqueDownsampling = Downsampling._2xBilinear;
+        [SerializeField] bool m_RequireDepthNormalsTexture = false;
 
         // Quality settings
         [SerializeField] bool m_SupportsHDR = false;
@@ -246,6 +247,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public Downsampling opaqueDownsampling
         {
             get { return m_OpaqueDownsampling; }
+        }
+
+        public bool supportsCameraDepthNormalsTexture
+        {
+            get { return m_RequireDepthNormalsTexture; }
         }
 
         public bool supportsHDR

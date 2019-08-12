@@ -7,6 +7,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
     internal class DefaultRendererSetup : IRendererSetup
     {
         private DepthOnlyPass m_DepthOnlyPass;
+        private DepthNormalPass m_DepthNormalPass;
         private MainLightShadowCasterPass m_MainLightShadowCasterPass;
         private AdditionalLightsShadowCasterPass m_AdditionalLightsShadowCasterPass;
         private SetupForwardRenderingPass m_SetupForwardRenderingPass;
@@ -49,6 +50,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 return;
 
             m_DepthOnlyPass = new DepthOnlyPass();
+            m_DepthNormalPass = new DepthNormalPass();
             m_MainLightShadowCasterPass = new MainLightShadowCasterPass();
             m_AdditionalLightsShadowCasterPass = new AdditionalLightsShadowCasterPass();
             m_SetupForwardRenderingPass = new SetupForwardRenderingPass();
@@ -152,9 +154,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     renderer.EnqueuePass(pass.GetPassToEnqueue(m_DepthOnlyPass.descriptor, DepthTexture));
             }
 
-            DepthNormalPass depthNormalPass = new DepthNormalPass();
-            depthNormalPass.Setup(baseDescriptor, DepthNormalTexture);
-            renderer.EnqueuePass(depthNormalPass);
+            bool requiresDepthNormalPass = renderingData.cameraData.requiresDepthNormalsTexture;
+
+            if (requiresDepthNormalPass)
+            {
+                m_DepthNormalPass.Setup(baseDescriptor, DepthNormalTexture);
+                renderer.EnqueuePass(m_DepthNormalPass);
+            }
 
             if (resolveShadowsInScreenSpace)
             {

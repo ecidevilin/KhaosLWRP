@@ -19,6 +19,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static GUIContent requireDepthTextureText = EditorGUIUtility.TrTextContent("Depth Texture", "If enabled the pipeline will generate camera's depth that can be bound in shaders as _CameraDepthTexture.");
             public static GUIContent requireOpaqueTextureText = EditorGUIUtility.TrTextContent("Opaque Texture", "If enabled the pipeline will copy the screen to texture after opaque objects are drawn. For transparent objects this can be bound in shaders as _CameraOpaqueTexture.");
             public static GUIContent opaqueDownsamplingText = EditorGUIUtility.TrTextContent("Opaque Downsampling", "The downsampling method that is used for the opaque texture");
+            public static GUIContent requireDepthNormalTextureText = EditorGUIUtility.TrTextContent("Depth Normals Texture", "If enabled the pipeline will generate view-space normals and camera's depth that can be bound in shaders as _CameraDepthNormalsTexture.");
 
             // Quality
             public static GUIContent hdrText = EditorGUIUtility.TrTextContent("HDR", "Controls the global HDR settings.");
@@ -71,6 +72,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         SerializedProperty m_RequireDepthTextureProp;
         SerializedProperty m_RequireOpaqueTextureProp;
         SerializedProperty m_OpaqueDownsamplingProp;
+        SerializedProperty m_RequireDepthNormalsTextureProp;
 
         SerializedProperty m_HDR;
         SerializedProperty m_MSAA;
@@ -119,6 +121,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             m_RequireDepthTextureProp = serializedObject.FindProperty("m_RequireDepthTexture");
             m_RequireOpaqueTextureProp = serializedObject.FindProperty("m_RequireOpaqueTexture");
             m_OpaqueDownsamplingProp = serializedObject.FindProperty("m_OpaqueDownsampling");
+            m_RequireDepthNormalsTextureProp = serializedObject.FindProperty("m_RequireDepthNormalsTexture");
 
             m_HDR = serializedObject.FindProperty("m_SupportsHDR");
             m_MSAA = serializedObject.FindProperty("m_MSAA");
@@ -161,6 +164,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 EditorGUILayout.PropertyField(m_OpaqueDownsamplingProp, Styles.opaqueDownsamplingText);
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.indentLevel--;
+                EditorGUILayout.PropertyField(m_RequireDepthNormalsTextureProp, Styles.requireDepthNormalTextureText);
                 EditorGUI.indentLevel--;
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();

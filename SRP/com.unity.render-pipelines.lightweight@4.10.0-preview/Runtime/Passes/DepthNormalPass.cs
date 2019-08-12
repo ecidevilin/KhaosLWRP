@@ -40,7 +40,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             this.destination = destination;
             baseDescriptor.depthBufferBits = kDepthBufferBits;
-            //baseDescriptor.colorFormat = RenderTextureFormat.ARGB32;
+            baseDescriptor.colorFormat = RenderTextureFormat.ARGB32;
             descriptor = baseDescriptor;
         }
 
