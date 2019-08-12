@@ -3,9 +3,9 @@ using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
-    public class DepthNormalPass : ScriptableRenderPass
+    public class DepthNormalsPass : ScriptableRenderPass
     {
-        const string k_DepthNormalTag = "Depth Normal Pass";
+        const string k_DepthNormalsTag = "Depth Normals Pass";
 
         int kDepthBufferBits = 16;
         
@@ -19,9 +19,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         /// <summary>
         /// Create the DepthOnlyPass
         /// </summary>
-        public DepthNormalPass()
+        public DepthNormalsPass()
         {
-            RegisterShaderPassName("DepthNormal");
+            RegisterShaderPassName("DepthNormals");
             opaqueFilterSettings = new FilterRenderersSettings(true)
             {
                 renderQueueRange = RenderQueueRange.opaque,
@@ -48,8 +48,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             if (renderer == null)
                 throw new ArgumentNullException("renderer");
             
-            CommandBuffer cmd = CommandBufferPool.Get(k_DepthNormalTag);
-            using (new ProfilingSample(cmd, k_DepthNormalTag))
+            CommandBuffer cmd = CommandBufferPool.Get(k_DepthNormalsTag);
+            using (new ProfilingSample(cmd, k_DepthNormalsTag))
             {
                 cmd.GetTemporaryRT(depthNormalsHandle.id, descriptor, FilterMode.Bilinear);
                 

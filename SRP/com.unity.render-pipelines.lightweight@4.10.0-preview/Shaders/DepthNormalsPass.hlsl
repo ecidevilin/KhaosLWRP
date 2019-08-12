@@ -21,7 +21,7 @@ struct Varyings
 	UNITY_VERTEX_OUTPUT_STEREO
 };
 
-Varyings DepthNormalVertex(Attributes input)
+Varyings DepthNormalsVertex(Attributes input)
 {
 	Varyings output = (Varyings)0;
 	UNITY_SETUP_INSTANCE_ID(input);
@@ -61,7 +61,7 @@ inline float4 EncodeDepthNormal(float depth, float3 normal)
 	return enc;
 }
 
-half4 DepthNormalFragment(Varyings input) : SV_TARGET
+half4 DepthNormalsFragment(Varyings input) : SV_TARGET
 {
 	Alpha(SampleAlbedoAlpha(input.uv, TEXTURE2D_PARAM(_MainTex, sampler_MainTex)).a, _Color, _Cutoff);
 	return EncodeDepthNormal(input.nz.w, input.nz.xyz);;

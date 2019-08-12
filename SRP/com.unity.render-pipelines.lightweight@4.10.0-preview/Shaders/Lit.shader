@@ -180,8 +180,8 @@ Shader "Lightweight Render Pipeline/Lit"
 
 		Pass
 		{
-			Name "DepthNormal"
-			Tags{"LightMode" = "DepthNormal"}
+			Name "DepthNormals"
+			Tags{"LightMode" = "DepthNormals"}
 
 			ZWrite On
 			ZTest LEqual
@@ -193,8 +193,8 @@ Shader "Lightweight Render Pipeline/Lit"
 			#pragma exclude_renderers d3d11_9x
 			#pragma target 2.0
 
-			#pragma vertex DepthNormalVertex
-			#pragma fragment DepthNormalFragment
+			#pragma vertex DepthNormalsVertex
+			#pragma fragment DepthNormalsFragment
 
 			// -------------------------------------
 			// Material Keywords
@@ -205,7 +205,7 @@ Shader "Lightweight Render Pipeline/Lit"
 			// GPU Instancing
 			#pragma multi_compile_instancing
 			#include "LitInput.hlsl"
-			#include "DepthNormalPass.hlsl"
+			#include "DepthNormalsPass.hlsl"
 			ENDHLSL
 		}
 

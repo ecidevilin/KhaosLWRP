@@ -7,7 +7,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
     internal class DefaultRendererSetup : IRendererSetup
     {
         private DepthOnlyPass m_DepthOnlyPass;
-        private DepthNormalPass m_DepthNormalPass;
+        private DepthNormalsPass m_DepthNormalsPass;
         private MainLightShadowCasterPass m_MainLightShadowCasterPass;
         private AdditionalLightsShadowCasterPass m_AdditionalLightsShadowCasterPass;
         private SetupForwardRenderingPass m_SetupForwardRenderingPass;
@@ -34,7 +34,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private RenderTargetHandle DepthAttachment;
         private RenderTargetHandle DepthTexture;
         private RenderTargetHandle OpaqueColor;
-        private RenderTargetHandle DepthNormalTexture;
+        private RenderTargetHandle DepthNormalsTexture;
         private RenderTargetHandle MainLightShadowmap;
         private RenderTargetHandle AdditionalLightsShadowmap;
         private RenderTargetHandle ScreenSpaceShadowmap;
@@ -50,7 +50,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 return;
 
             m_DepthOnlyPass = new DepthOnlyPass();
-            m_DepthNormalPass = new DepthNormalPass();
+            m_DepthNormalsPass = new DepthNormalsPass();
             m_MainLightShadowCasterPass = new MainLightShadowCasterPass();
             m_AdditionalLightsShadowCasterPass = new AdditionalLightsShadowCasterPass();
             m_SetupForwardRenderingPass = new SetupForwardRenderingPass();
@@ -78,7 +78,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             DepthAttachment.Init("_CameraDepthAttachment");
             DepthTexture.Init("_CameraDepthTexture");
             OpaqueColor.Init("_CameraOpaqueTexture");
-            DepthNormalTexture.Init("_CameraDepthNormalsTexture");
+            DepthNormalsTexture.Init("_CameraDepthNormalsTexture");
             MainLightShadowmap.Init("_MainLightShadowmapTexture");
             AdditionalLightsShadowmap.Init("_AdditionalLightsShadowmapTexture");
             ScreenSpaceShadowmap.Init("_ScreenSpaceShadowmapTexture");
@@ -154,12 +154,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     renderer.EnqueuePass(pass.GetPassToEnqueue(m_DepthOnlyPass.descriptor, DepthTexture));
             }
 
-            bool requiresDepthNormalPass = renderingData.cameraData.requiresDepthNormalsTexture;
+            bool requiresDepthNormalsPass = renderingData.cameraData.requiresDepthNormalsTexture;
 
-            if (requiresDepthNormalPass)
+            if (requiresDepthNormalsPass)
             {
-                m_DepthNormalPass.Setup(baseDescriptor, DepthNormalTexture, DepthTexture, requiresDepthPrepass);
-                renderer.EnqueuePass(m_DepthNormalPass);
+                m_DepthNormalsPass.Setup(baseDescriptor, DepthNormalsTexture, DepthTexture, requiresDepthPrepass);
+                renderer.EnqueuePass(m_DepthNormalsPass);
             }
 
             if (resolveShadowsInScreenSpace)
