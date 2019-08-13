@@ -20,7 +20,7 @@ Shader "Hidden/PostProcessing/ScalableAO"
                 #pragma fragment FragAO
                 #pragma multi_compile _ APPLY_FORWARD_FOG
                 #pragma multi_compile _ FOG_LINEAR FOG_EXP FOG_EXP2
-				#pragma multi_compile _ CAMERA_DEPTH_MSAA
+				#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
                 #define SOURCE_DEPTH
                 #include "ScalableAO.hlsl"
 

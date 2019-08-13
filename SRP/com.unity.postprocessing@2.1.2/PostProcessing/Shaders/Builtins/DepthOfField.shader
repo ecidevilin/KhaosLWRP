@@ -13,7 +13,7 @@ Shader "Hidden/PostProcessing/DepthOfField"
 
             HLSLPROGRAM
                 #pragma target 3.5
-				#pragma multi_compile _ CAMERA_DEPTH_MSAA
+				#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
                 #pragma vertex VertDefault
                 #pragma fragment FragCoC
                 #include "DepthOfField.hlsl"
@@ -126,7 +126,7 @@ Shader "Hidden/PostProcessing/DepthOfField"
 
             HLSLPROGRAM
                 #pragma target 3.5
-				#pragma multi_compile _ CAMERA_DEPTH_MSAA
+				#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
                 #pragma vertex VertDefault
                 #pragma fragment FragDebugOverlay
                 #include "DepthOfField.hlsl"
@@ -146,7 +146,7 @@ Shader "Hidden/PostProcessing/DepthOfField"
 
             HLSLPROGRAM
                 #pragma target 3.5
-				#pragma multi_compile _ CAMERA_DEPTH_MSAA
+				#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
                 #pragma vertex VertDefault
                 #pragma fragment FragCoC
                 #include "DepthOfField.hlsl"
@@ -259,7 +259,7 @@ Shader "Hidden/PostProcessing/DepthOfField"
 
             HLSLPROGRAM
                 #pragma target 3.5
-				#pragma multi_compile _ CAMERA_DEPTH_MSAA
+				#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
                 #pragma vertex VertDefault
                 #pragma fragment FragDebugOverlay
                 #include "DepthOfField.hlsl"

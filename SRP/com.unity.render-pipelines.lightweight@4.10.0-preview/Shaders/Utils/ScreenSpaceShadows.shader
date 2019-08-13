@@ -23,7 +23,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
         TEXTURE2D_ARRAY_FLOAT(_CameraDepthTexture);
 #else
         //TEXTURE2D_FLOAT(_CameraDepthTexture);
-#ifdef CAMERA_DEPTH_MSAA
+#if defined(_DEPTH_MSAA_2) || defined(_DEPTH_MSAA_4)
 		Texture2DMS<float, 1> _CameraDepthTexture;
 		float4 _CameraDepthTexture_TexelSize;
 #else
@@ -34,7 +34,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
 
 	float SampleCameraDepth(float2 uv)
 	{
-#ifdef CAMERA_DEPTH_MSAA
+#if defined(_DEPTH_MSAA_2) || defined(_DEPTH_MSAA_4)
 		return _CameraDepthTexture.Load(uv*_CameraDepthTexture_TexelSize.zw, 0);
 #else
 		return SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, sampler_CameraDepthTexture, uv, 0);
@@ -112,7 +112,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
 
             HLSLPROGRAM
             #pragma multi_compile _ _SHADOWS_SOFT
-			#pragma multi_compile _ CAMERA_DEPTH_MSAA
+			#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
 
             #pragma vertex   Vertex
             #pragma fragment Fragment

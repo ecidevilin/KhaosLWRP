@@ -151,7 +151,7 @@ Shader "Hidden/PostProcessing/TemporalAntialiasing"
         {
             HLSLPROGRAM
 
-				#pragma multi_compile _ CAMERA_DEPTH_MSAA
+				#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
                 #pragma vertex VertDefault
                 #pragma fragment FragSolverDilate
 

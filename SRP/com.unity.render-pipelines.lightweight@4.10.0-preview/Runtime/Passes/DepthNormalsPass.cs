@@ -32,12 +32,17 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         /// Configure the pass
         /// </summary>
         public void Setup(
-            RenderTextureDescriptor baseDescriptor, RenderTargetHandle depthNormalsHandle, RenderTargetHandle depthAttachmentHandle, bool depthPrepass)
+            RenderTextureDescriptor baseDescriptor, RenderTargetHandle depthNormalsHandle, RenderTargetHandle depthAttachmentHandle, bool depthPrepass, SampleCount samples)
         {
             this.depthNormalsHandle = depthNormalsHandle;
             this.depthAttachmentHandle = depthAttachmentHandle;
             baseDescriptor.depthBufferBits = depthPrepass ? 0 : kDepthBufferBits;
             baseDescriptor.colorFormat = RenderTextureFormat.ARGB32;
+            if ((int)samples > 1 && depthPrepass)
+            {
+                baseDescriptor.bindMS = false;
+                baseDescriptor.msaaSamples = (int)samples;
+            }
             descriptor = baseDescriptor;
             this.isDepthPrepassEnabled = depthPrepass;
         }

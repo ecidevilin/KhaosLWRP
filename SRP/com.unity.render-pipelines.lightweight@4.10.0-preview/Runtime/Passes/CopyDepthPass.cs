@@ -49,6 +49,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             cmd.GetTemporaryRT(destination.id, descriptor, FilterMode.Point);
 
             cmd.SetGlobalTexture("_CameraDepthAttachment", source.Identifier());
+            cmd.SetGlobalTexture("_CameraDepthTexture", source.Identifier());
 
             if (renderingData.cameraData.msaaSamples > 1)
             {

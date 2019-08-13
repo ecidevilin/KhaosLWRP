@@ -105,13 +105,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             RenderTargetHandle colorHandle = RenderTargetHandle.CameraTarget;
             RenderTargetHandle depthHandle = RenderTargetHandle.CameraTarget;
+            var sampleCount = (SampleCount)renderingData.cameraData.msaaSamples;
 
             if (requiresRenderToTexture)
             {
                 colorHandle = ColorAttachment;
                 depthHandle = DepthAttachment;
 
-                var sampleCount = (SampleCount)renderingData.cameraData.msaaSamples;
                 m_CreateLightweightRenderTexturesPass.Setup(baseDescriptor, colorHandle, depthHandle, sampleCount);
                 renderer.EnqueuePass(m_CreateLightweightRenderTexturesPass);
             }
@@ -142,13 +142,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             // For now VR requires a depth prepass until we figure out how to properly resolve texture2DMS in stereo
             requiresDepthPrepass |= renderingData.cameraData.isStereoEnabled;
-
             renderer.EnqueuePass(m_SetupForwardRenderingPass);
 
             if (requiresDepthPrepass)
             {
-                m_DepthOnlyPass.Setup(baseDescriptor, DepthTexture, SampleCount.One);
+                m_DepthOnlyPass.Setup(baseDescriptor, DepthTexture, sampleCount);
                 renderer.EnqueuePass(m_DepthOnlyPass);
+                depthHandle = DepthTexture;
 
                 foreach (var pass in camera.GetComponents<IAfterDepthPrePass>())
                     renderer.EnqueuePass(pass.GetPassToEnqueue(m_DepthOnlyPass.descriptor, DepthTexture));
@@ -158,7 +158,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             if (requiresDepthNormalsPass)
             {
-                m_DepthNormalsPass.Setup(baseDescriptor, DepthNormalsTexture, DepthTexture, requiresDepthPrepass);
+                m_DepthNormalsPass.Setup(baseDescriptor, DepthNormalsTexture, DepthTexture, requiresDepthPrepass, sampleCount);
                 renderer.EnqueuePass(m_DepthNormalsPass);
             }
 
@@ -180,7 +180,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             if (m_BeforeRenderPasses.Count != 0)
                 clearFlag = ClearFlag.None;
 
-            m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, clearFlag, camera.backgroundColor, rendererConfiguration);
+            m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, clearFlag, camera.backgroundColor, rendererConfiguration, requiresDepthPrepass);
             renderer.EnqueuePass(m_RenderOpaqueForwardPass);
             foreach (var pass in camera.GetComponents<IAfterOpaquePass>())
                 renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));

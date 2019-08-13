@@ -45,7 +45,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             if ((int)samples > 1)
             {
-                baseDescriptor.bindMS = false;
+                baseDescriptor.bindMS = true;
                 baseDescriptor.msaaSamples = (int)samples;
             }
 
@@ -71,6 +71,26 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     Color.black,
                     descriptor.dimension);
 
+                if (descriptor.msaaSamples > 1)
+                {
+                    cmd.DisableShaderKeyword(ShaderKeywordStrings.DepthNoMsaa);
+                    if (descriptor.msaaSamples == 4)
+                    {
+                        cmd.DisableShaderKeyword(ShaderKeywordStrings.DepthMsaa2);
+                        cmd.EnableShaderKeyword(ShaderKeywordStrings.DepthMsaa4);
+                    }
+                    else
+                    {
+                        cmd.EnableShaderKeyword(ShaderKeywordStrings.DepthMsaa2);
+                        cmd.DisableShaderKeyword(ShaderKeywordStrings.DepthMsaa4);
+                    }
+                }
+                else
+                {
+                    cmd.EnableShaderKeyword(ShaderKeywordStrings.DepthNoMsaa);
+                    cmd.DisableShaderKeyword(ShaderKeywordStrings.DepthMsaa2);
+                    cmd.DisableShaderKeyword(ShaderKeywordStrings.DepthMsaa4);
+                }
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 

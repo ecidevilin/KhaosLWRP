@@ -23,6 +23,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         RendererConfiguration rendererConfiguration;
 
+        private bool isDepthPrepassEnabled;
+
         public RenderOpaqueForwardPass()
         {
             RegisterShaderPassName("LightweightForward");
@@ -49,7 +51,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             RenderTargetHandle depthAttachmentHandle,
             ClearFlag clearFlag,
             Color clearColor,
-            RendererConfiguration configuration)
+            RendererConfiguration configuration,
+            bool depthPrepass)
         {
             this.colorAttachmentHandle = colorAttachmentHandle;
             this.depthAttachmentHandle = depthAttachmentHandle;
@@ -57,6 +60,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             this.clearFlag = clearFlag;
             descriptor = baseDescriptor;
             this.rendererConfiguration = configuration;
+            this.isDepthPrepassEnabled = depthPrepass;
         }
 
         /// <inheritdoc/>
@@ -72,9 +76,17 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 // In that case we set loadOp for both color and depth as RenderBufferLoadAction.Load
                 RenderBufferLoadAction loadOp = clearFlag != ClearFlag.None ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load;
                 RenderBufferStoreAction storeOp = RenderBufferStoreAction.Store;
+                RenderBufferLoadAction depthLoadOp = loadOp;
+                RenderBufferStoreAction depthStoreOp = storeOp;
+                if (isDepthPrepassEnabled)
+                {
+                    depthLoadOp = RenderBufferLoadAction.Load;
+                    depthStoreOp = RenderBufferStoreAction.DontCare;
+                    clearFlag &= ~(ClearFlag.Depth);
+                }
 
                 SetRenderTarget(cmd, colorAttachmentHandle.Identifier(), loadOp, storeOp,
-                    depthAttachmentHandle.Identifier(), loadOp, storeOp, clearFlag, clearColor, descriptor.dimension);
+                    depthAttachmentHandle.Identifier(), depthLoadOp, depthStoreOp, ClearFlag.Color, clearColor, descriptor.dimension);
 
                 // TODO: We need a proper way to handle multiple camera/ camera stack. Issue is: multiple cameras can share a same RT
                 // (e.g, split screen games). However devs have to be dilligent with it and know when to clear/preserve color.
