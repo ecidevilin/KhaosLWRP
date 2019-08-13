@@ -19,13 +19,28 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
         #include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/Shadows.hlsl"
 
-#if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED)
+#if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED) //TODO: 
         TEXTURE2D_ARRAY_FLOAT(_CameraDepthTexture);
 #else
-        TEXTURE2D_FLOAT(_CameraDepthTexture);
+        //TEXTURE2D_FLOAT(_CameraDepthTexture);
+#ifdef CAMERA_DEPTH_MSAA
+		Texture2DMS<float, 1> _CameraDepthTexture;
+		float4 _CameraDepthTexture_TexelSize;
+#else
+		TEXTURE2D_FLOAT(_CameraDepthTexture);
 #endif
 
-        SAMPLER(sampler_CameraDepthTexture);
+	SAMPLER(sampler_CameraDepthTexture);
+
+	float SampleCameraDepth(float2 uv)
+	{
+#ifdef CAMERA_DEPTH_MSAA
+		return _CameraDepthTexture.Load(uv*_CameraDepthTexture_TexelSize.zw, 0);
+#else
+		return SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, sampler_CameraDepthTexture, uv, 0);
+#endif
+	}
+#endif
 
         struct Attributes
         {
@@ -65,7 +80,8 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
 #if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED)
             float deviceDepth = SAMPLE_TEXTURE2D_ARRAY(_CameraDepthTexture, sampler_CameraDepthTexture, input.uv.xy, unity_StereoEyeIndex).r;
 #else
-            float deviceDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, input.uv.xy);
+            //float deviceDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, input.uv.xy);
+		float deviceDepth = SampleCameraDepth(input.uv.xy);
 #endif
 
 #if UNITY_REVERSED_Z
@@ -96,6 +112,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
 
             HLSLPROGRAM
             #pragma multi_compile _ _SHADOWS_SOFT
+			#pragma multi_compile _ CAMERA_DEPTH_MSAA
 
             #pragma vertex   Vertex
             #pragma fragment Fragment

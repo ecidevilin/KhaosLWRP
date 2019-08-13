@@ -4,6 +4,7 @@
 #include "../StdLib.hlsl"
 #include "../Colors.hlsl"
 #include "Fog.hlsl"
+#include "CameraDepth.hlsl"
 
 // --------
 // Options for further customization
@@ -47,7 +48,6 @@ static const float kBeta = 0.002;
 // System built-in variables
 TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
 TEXTURE2D_SAMPLER2D(_CameraGBufferTexture2, sampler_CameraGBufferTexture2);
-TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
 TEXTURE2D_SAMPLER2D(_CameraDepthNormalsTexture, sampler_CameraDepthNormalsTexture);
 
 float4 _MainTex_TexelSize;
@@ -104,7 +104,7 @@ float CheckBounds(float2 uv, float d)
 // Depth/normal sampling functions
 float SampleDepth(float2 uv)
 {
-    float d = Linear01Depth(SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoTransformScreenSpaceTex(uv), 0));
+    float d = Linear01Depth(SampleCameraDepth(UnityStereoTransformScreenSpaceTex(uv)));
     return d * _ProjectionParams.z + CheckBounds(uv, d);
 }
 
@@ -248,7 +248,7 @@ float4 FragAO(VaryingsDefault i) : SV_Target
 
     // Apply fog when enabled (forward-only)
 #if (APPLY_FORWARD_FOG)
-    float d = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo));
+	float d = Linear01Depth(SampleCameraDepth(i.texcoordStereo));
     d = ComputeFogDistance(d);
     ao *= ComputeFog(d);
 #endif

@@ -5,6 +5,7 @@ Shader "Hidden/PostProcessing/TemporalAntialiasing"
         #pragma exclude_renderers gles psp2
         #include "../StdLib.hlsl"
         #include "../Colors.hlsl"
+		#include "CameraDepth.hlsl"
 
     #if UNITY_VERSION >= 201710
         #define _MainTexSampler sampler_LinearClamp
@@ -17,8 +18,8 @@ Shader "Hidden/PostProcessing/TemporalAntialiasing"
 
         TEXTURE2D_SAMPLER2D(_HistoryTex, sampler_HistoryTex);
 
-        TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
-        float4 _CameraDepthTexture_TexelSize;
+        //TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
+        //float4 _CameraDepthTexture_TexelSize;
 
         TEXTURE2D_SAMPLER2D(_CameraMotionVectorsTexture, sampler_CameraMotionVectorsTexture);
 
@@ -31,10 +32,14 @@ Shader "Hidden/PostProcessing/TemporalAntialiasing"
             const float2 k = _CameraDepthTexture_TexelSize.xy;
 
             const float4 neighborhood = float4(
-                SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv - k)),
-                SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv + float2(k.x, -k.y))),
-                SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv + float2(-k.x, k.y))),
-                SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv + k))
+                //SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv - k)),
+                //SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv + float2(k.x, -k.y))),
+                //SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv + float2(-k.x, k.y))),
+                //SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, UnityStereoClamp(uv + k))
+				SampleCameraDepth(UnityStereoClamp(uv - k)),
+				SampleCameraDepth(UnityStereoClamp(uv + float2(k.x, -k.y))),
+				SampleCameraDepth(UnityStereoClamp(uv + float2(-k.x, k.y))),
+				SampleCameraDepth(UnityStereoClamp(uv + k))
             );
 
         #if defined(UNITY_REVERSED_Z)
@@ -43,7 +48,8 @@ Shader "Hidden/PostProcessing/TemporalAntialiasing"
             #define COMPARE_DEPTH(a, b) step(a, b)
         #endif
 
-            float3 result = float3(0.0, 0.0, SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, uv));
+            //float3 result = float3(0.0, 0.0, SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, uv));
+			float3 result = float3(0.0, 0.0, SampleCameraDepth(uv));
             result = lerp(result, float3(-1.0, -1.0, neighborhood.x), COMPARE_DEPTH(neighborhood.x, result.z));
             result = lerp(result, float3( 1.0, -1.0, neighborhood.y), COMPARE_DEPTH(neighborhood.y, result.z));
             result = lerp(result, float3(-1.0,  1.0, neighborhood.z), COMPARE_DEPTH(neighborhood.z, result.z));
@@ -145,6 +151,7 @@ Shader "Hidden/PostProcessing/TemporalAntialiasing"
         {
             HLSLPROGRAM
 
+				#pragma multi_compile _ CAMERA_DEPTH_MSAA
                 #pragma vertex VertDefault
                 #pragma fragment FragSolverDilate
 

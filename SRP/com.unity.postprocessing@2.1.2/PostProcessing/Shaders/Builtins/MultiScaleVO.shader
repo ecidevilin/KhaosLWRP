@@ -7,8 +7,9 @@ Shader "Hidden/PostProcessing/MultiScaleVO"
 
         #include "../StdLib.hlsl"
         #include "Fog.hlsl"
+		#include "CameraDepth.hlsl"
 
-        TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
+        //TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
         TEXTURE2D_SAMPLER2D(_MSVOcclusionTexture, sampler_MSVOcclusionTexture);
         float3 _AOColor;
 
@@ -23,12 +24,14 @@ Shader "Hidden/PostProcessing/MultiScaleVO"
         {
             HLSLPROGRAM
 
+				#pragma multi_compile _ CAMERA_DEPTH_MSAA
                 #pragma vertex VertDefault
                 #pragma fragment Frag
 
                 float4 Frag(VaryingsDefault i) : SV_Target
                 {
-                    return SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo);
+                    //return SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo);
+					return SampleCameraDepth(i.texcoordStereo);
                 }
 
             ENDHLSL
@@ -71,6 +74,7 @@ Shader "Hidden/PostProcessing/MultiScaleVO"
 
                 #pragma multi_compile _ APPLY_FORWARD_FOG
                 #pragma multi_compile _ FOG_LINEAR FOG_EXP FOG_EXP2
+				#pragma multi_compile _ CAMERA_DEPTH_MSAA
                 #pragma vertex VertDefault
                 #pragma fragment Frag
 
@@ -80,7 +84,8 @@ Shader "Hidden/PostProcessing/MultiScaleVO"
 
                     // Apply fog when enabled (forward-only)
                 #if (APPLY_FORWARD_FOG)
-                    float d = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo));
+                    //float d = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo));
+					float d = Linear01Depth(SampleCameraDepth(i.texcoordStereo));
                     d = ComputeFogDistance(d);
                     ao *= ComputeFog(d);
                 #endif

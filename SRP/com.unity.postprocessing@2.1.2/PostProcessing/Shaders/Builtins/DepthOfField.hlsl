@@ -4,11 +4,12 @@
 #include "../StdLib.hlsl"
 #include "../Colors.hlsl"
 #include "DiskKernels.hlsl"
+#include "CameraDepth.hlsl"
 
 TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
 float4 _MainTex_TexelSize;
 
-TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
+//TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
 TEXTURE2D_SAMPLER2D(_CameraMotionVectorsTexture, sampler_CameraMotionVectorsTexture);
 
 TEXTURE2D_SAMPLER2D(_CoCTex, sampler_CoCTex);
@@ -27,7 +28,8 @@ half3 _TaaParams; // Jitter.x, Jitter.y, Blending
 // CoC calculation
 half4 FragCoC(VaryingsDefault i) : SV_Target
 {
-    float depth = LinearEyeDepth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo));
+    //float depth = LinearEyeDepth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo));
+	float depth = LinearEyeDepth(SampleCameraDepth(i.texcoordStereo));
     half coc = (depth - _Distance) * _LensCoeff / max(depth, 1e-5);
     return saturate(coc * 0.5 * _RcpMaxCoC + 0.5);
 }
@@ -249,7 +251,7 @@ half4 FragDebugOverlay(VaryingsDefault i) : SV_Target
 
     // Calculate the radiuses of CoC.
     half4 src = SAMPLE_TEXTURE2D(_DepthOfFieldTex, sampler_DepthOfFieldTex, i.texcoordStereo);
-    float depth = LinearEyeDepth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, i.texcoordStereo));
+    float depth = LinearEyeDepth(SampleCameraDepth(i.texcoordStereo));
     float coc = (depth - _Distance) * _LensCoeff / depth;
     coc *= 80;
 
