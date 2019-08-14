@@ -195,7 +195,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             cmd.SetGlobalVector("_LightDirection", new Vector4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f));
         }
 
-        static Matrix4x4 GetShadowTransform(Matrix4x4 proj, Matrix4x4 view)
+        public static Matrix4x4 GetShadowTransform(Matrix4x4 proj, Matrix4x4 view)
         {
             // Currently CullResults ComputeDirectionalShadowMatricesAndCullingPrimitives doesn't
             // apply z reversal to projection matrix. We need to do it manually here.

@@ -21,6 +21,9 @@ SAMPLER(sampler_ScreenSpaceShadowmapTexture);
 TEXTURE2D_SHADOW(_MainLightShadowmapTexture);
 SAMPLER_CMP(sampler_MainLightShadowmapTexture);
 
+TEXTURE2D_SHADOW(_MainCharacterShadowmapTexture);
+SAMPLER_CMP(sampler_MainCharacterShadowmapTexture);
+
 TEXTURE2D_SHADOW(_AdditionalLightsShadowmapTexture);
 SAMPLER_CMP(sampler_AdditionalLightsShadowmapTexture);
 
@@ -52,6 +55,16 @@ half4       _AdditionalShadowOffset3;
 float4      _AdditionalShadowmapSize; // (xy: 1/width and 1/height, zw: width and height)
 CBUFFER_END
 
+CBUFFER_START(_MainCharacterShadowBuffer)
+float4x4 _MainCharacterWorldToShadow;
+half _MainCharacterShadowStrength;
+float4 _MainCharacterShadowmapSize;
+half4       _MainCharacterShadowOffset0;
+half4       _MainCharacterShadowOffset1;
+half4       _MainCharacterShadowOffset2;
+half4       _MainCharacterShadowOffset3;
+CBUFFER_END
+
 #if UNITY_REVERSED_Z
 #define BEYOND_SHADOW_FAR(shadowCoord) shadowCoord.z <= UNITY_RAW_FAR_CLIP_VALUE
 #else
@@ -76,6 +89,17 @@ ShadowSamplingData GetMainLightShadowSamplingData()
     shadowSamplingData.shadowOffset3 = _MainLightShadowOffset3;
     shadowSamplingData.shadowmapSize = _MainLightShadowmapSize;
     return shadowSamplingData;
+}
+
+ShadowSamplingData GetMainCharacterShadowSamplingData()
+{
+	ShadowSamplingData shadowSamplingData;
+	shadowSamplingData.shadowOffset0 = _MainCharacterShadowOffset0;
+	shadowSamplingData.shadowOffset1 = _MainCharacterShadowOffset1;
+	shadowSamplingData.shadowOffset2 = _MainCharacterShadowOffset2;
+	shadowSamplingData.shadowOffset3 = _MainCharacterShadowOffset3;
+	shadowSamplingData.shadowmapSize = _MainCharacterShadowmapSize;
+	return shadowSamplingData;
 }
 
 ShadowSamplingData GetAdditionalLightShadowSamplingData()
