@@ -150,6 +150,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             cmd.DisableShaderKeyword(ShaderKeywordStrings.AdditionalLightsPixel);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.AdditionalLightShadows);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.SoftShadows);
+            cmd.DisableShaderKeyword(ShaderKeywordStrings.MainCharacterShadows);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.MixedLightingSubtractive);
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);

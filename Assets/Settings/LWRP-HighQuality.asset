@@ -34,6 +34,8 @@ MonoBehaviour:
   m_ShadowDepthBias: 1
   m_ShadowNormalBias: 1
   m_SoftShadowsSupported: 1
+  m_SupportsMainCharacterShadows: 1
+  m_MainCharacterShadowmapResolution: 512
   m_SupportsDynamicBatching: 1
   m_MixedLightingSupported: 1
   m_ShadowType: 2

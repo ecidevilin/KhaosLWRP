@@ -98,8 +98,8 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
             // Screenspace shadowmap is only used for directional lights which use orthogonal projection.
             ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
             half shadowStrength = GetMainLightShadowStrength();
-            half4 atten = SampleShadowmap(coords, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
-#ifdef _MAIN_CHARACTER_SHADOWS_TEXTURE
+            half atten = SampleShadowmap(coords, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
+#ifdef _MAIN_CHARACTER_SHADOWS
 			atten = min(atten, SampleShadowmap(mul(_MainCharacterWorldToShadow, float4(wpos, 1.0)), TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false));
 #endif
 			return atten;
@@ -117,7 +117,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
             HLSLPROGRAM
             #pragma multi_compile _ _SHADOWS_SOFT
 			#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
-			#pragma multi_compile _ _MAIN_CHARACTER_SHADOWS_TEXTURE
+			#pragma multi_compile _ _MAIN_CHARACTER_SHADOWS
 
             #pragma vertex   Vertex
             #pragma fragment Fragment

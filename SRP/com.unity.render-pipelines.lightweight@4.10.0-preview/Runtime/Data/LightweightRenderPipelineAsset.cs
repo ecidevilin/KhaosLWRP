@@ -105,6 +105,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         [SerializeField] float m_ShadowDepthBias = 1.0f;
         [SerializeField] float m_ShadowNormalBias = 1.0f;
         [SerializeField] bool m_SoftShadowsSupported = false;
+        [SerializeField] bool m_SupportsMainCharacterShadows = false;
+        [SerializeField] ShadowResolution m_MainCharacterShadowmapResolution = ShadowResolution._1024;
 
         // Advanced settings
         [SerializeField] bool m_SupportsDynamicBatching = true;
@@ -353,6 +355,16 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public bool supportsSoftShadows
         {
             get { return m_SoftShadowsSupported; }
+        }
+
+        public bool supportsMainCharacterShadows
+        {
+            get { return m_SupportsMainCharacterShadows; }
+        }
+
+        public int mainCharacterShadowmapResolution
+        {
+            get { return (int)m_MainCharacterShadowmapResolution; }
         }
 
         public bool supportsDynamicBatching

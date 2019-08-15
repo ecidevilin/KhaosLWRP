@@ -20,6 +20,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private RenderTargetHandle destination { get; set; }
 
         private List<Renderer> _Renderers = new List<Renderer>();
+        MaterialPropertyBlock _RendererMPB = new MaterialPropertyBlock();
 
         public MainCharacterShadowCasterPass()
         {
@@ -115,7 +116,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (cmd == null)
                 throw new ArgumentNullException("cmd");
-            cmd.DisableShaderKeyword("_MAIN_CHARACTER_SHADOWS");
+            cmd.SetGlobalFloat("_IsMainCharacter", 0);
 
             if (m_MainCharacterShadowmapTexture)
             {
@@ -150,25 +151,29 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             CommandBuffer cmd = CommandBufferPool.Get(k_RenderMainCharacterShadowmapTag);
             using (new ProfilingSample(cmd, k_RenderMainCharacterShadowmapTag))
             {
-                m_MainCharacterShadowmapTexture = RenderTexture.GetTemporary(shadowData.mainLightShadowmapWidth,
-                    shadowData.mainLightShadowmapHeight, k_ShadowmapBufferBits, m_ShadowmapFormat);
+                m_MainCharacterShadowmapTexture = RenderTexture.GetTemporary(shadowData.mainCharacterShadowmapWidth,
+                    shadowData.mainCharacterShadowmapHeight, k_ShadowmapBufferBits, m_ShadowmapFormat);
                 m_MainCharacterShadowmapTexture.filterMode = FilterMode.Bilinear;
                 m_MainCharacterShadowmapTexture.wrapMode = TextureWrapMode.Clamp;
                 m_MainCharacterShadowmapTexture.name = "m_MainCharacterShadowmapTexture";
                 SetRenderTarget(cmd, m_MainCharacterShadowmapTexture, RenderBufferLoadAction.DontCare,
                     RenderBufferStoreAction.Store, ClearFlag.Depth, Color.black, TextureDimension.Tex2D);
                 
-                Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, shadowLightIndex, ref shadowData, m_ProjMatrix, shadowData.mainLightShadowmapWidth);
+                Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, shadowLightIndex, ref shadowData, m_ProjMatrix, shadowData.mainCharacterShadowmapWidth);
                 ShadowUtils.SetupShadowCasterConstantBuffer(cmd, ref shadowLight, shadowBias);
 
                 cmd.SetViewProjectionMatrices(m_ViewMatrix, m_ProjMatrix);
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
-                foreach(var r in _Renderers)
+                foreach (var r in _Renderers)
                 {
-                    cmd.DrawRenderer(r, r.sharedMaterial, 0, r.sharedMaterial.FindPass("ShadowCaster"));
-                    r.sharedMaterial.EnableKeyword("_MAIN_CHARACTER_SHADOWS");
+                    _RendererMPB.SetFloat("_IsMainCharacter", 1);
+                    r.SetPropertyBlock(_RendererMPB);
+                    for (int i = 0, imax = r.sharedMaterials.Length; i < imax; i++)
+                    {
+                        cmd.DrawRenderer(r, r.sharedMaterials[i], i, r.sharedMaterials[i].FindPass("ShadowCaster"));
+                    }
                 }
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
@@ -176,7 +181,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 SetupMainCharacterShadowReceiverConstants(cmd, ref shadowData, shadowLight);
             }
 
-            CoreUtils.SetKeyword(cmd, "_MAIN_CHARACTER_SHADOWS_TEXTURE", true);
+            CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.MainCharacterShadows, true);
             CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.SoftShadows, shadowLight.light.shadows == LightShadows.Soft && shadowData.supportsSoftShadows);
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
@@ -197,15 +202,15 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             //noOpShadowMatrix.m33 = (SystemInfo.usesReversedZBuffer) ? 1.0f : 0.0f;
             //m_MainLightShadowMatrices[k_MaxCascades] = noOpShadowMatrix;
 
-            float invShadowAtlasWidth = 1.0f / shadowData.mainLightShadowmapWidth;
-            float invShadowAtlasHeight = 1.0f / shadowData.mainLightShadowmapHeight;
+            float invShadowAtlasWidth = 1.0f / shadowData.mainCharacterShadowmapWidth;
+            float invShadowAtlasHeight = 1.0f / shadowData.mainCharacterShadowmapHeight;
             float invHalfShadowAtlasWidth = 0.5f * invShadowAtlasWidth;
             float invHalfShadowAtlasHeight = 0.5f * invShadowAtlasHeight;
             cmd.SetGlobalTexture(destination.id, m_MainCharacterShadowmapTexture);
             cmd.SetGlobalMatrix("_MainCharacterWorldToShadow", m_MainCharacterShadowMatrix);
             cmd.SetGlobalFloat("_MainCharacterShadowStrength", light.shadowStrength);
             cmd.SetGlobalVector("_MainCharacterShadowmapSize", new Vector4(invShadowAtlasWidth, invShadowAtlasHeight,
-                shadowData.mainLightShadowmapWidth, shadowData.mainLightShadowmapHeight));
+                shadowData.mainCharacterShadowmapWidth, shadowData.mainCharacterShadowmapHeight));
             cmd.SetGlobalVector("_MainCharacterShadowOffset0", new Vector4(-invHalfShadowAtlasWidth, -invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector("_MainCharacterShadowOffset1", new Vector4(invHalfShadowAtlasWidth, -invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector("_MainCharacterShadowOffset2", new Vector4(-invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));

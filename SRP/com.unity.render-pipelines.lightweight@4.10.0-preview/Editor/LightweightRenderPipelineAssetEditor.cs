@@ -30,7 +30,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static GUIContent mainLightRenderingModeText = EditorGUIUtility.TrTextContent("Main Light", "Main light is the brightest directional light.");
             public static GUIContent supportsMainLightShadowsText = EditorGUIUtility.TrTextContent("Cast Shadows", "If enabled the main light can be a shadow casting light.");
             public static GUIContent mainLightShadowmapResolutionText = EditorGUIUtility.TrTextContent("Shadow Resolution", "Resolution of the main light shadowmap texture. If cascades are enabled, cascades will be packed into an atlas and this setting controls the maximum shadows atlas resolution.");
-
+            public static GUIContent supportsMainCharacterShadowsText = EditorGUIUtility.TrTextContent("Individual shadowmap for the main character", "If enabled and individual shadowmap will be drawn for the main character.");
+            public static GUIContent mainCharacterShadowmapResolutionText = EditorGUIUtility.TrTextContent("Character Shadow Resolution", "Resolution of the main character shadowmap texture.");
             // Additional lights
             public static GUIContent addditionalLightsRenderingModeText = EditorGUIUtility.TrTextContent("Additional Lights", "Additional lights support.");
             public static GUIContent perObjectLimit = EditorGUIUtility.TrTextContent("Per Object Limit", "Maximum amount of additional lights. These lights are sorted and culled per-object.");
@@ -96,6 +97,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         SerializedProperty m_SoftShadowsSupportedProp;
 
+        SerializedProperty m_MainCharacterShadowsSupportedProp;
+        SerializedProperty m_MainCharacterShadowmapResolutionProp;
+
         SerializedProperty m_SupportsDynamicBatching;
         SerializedProperty m_MixedLightingSupportedProp;
 
@@ -143,6 +147,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             m_ShadowDepthBiasProp = serializedObject.FindProperty("m_ShadowDepthBias");
             m_ShadowNormalBiasProp = serializedObject.FindProperty("m_ShadowNormalBias");
             m_SoftShadowsSupportedProp = serializedObject.FindProperty("m_SoftShadowsSupported");
+            m_MainCharacterShadowsSupportedProp = serializedObject.FindProperty("m_SupportsMainCharacterShadows");
+            m_MainCharacterShadowmapResolutionProp = serializedObject.FindProperty("m_MainCharacterShadowmapResolution");
 
             m_SupportsDynamicBatching = serializedObject.FindProperty("m_SupportsDynamicBatching");
             m_MixedLightingSupportedProp = serializedObject.FindProperty("m_MixedLightingSupported");
@@ -204,6 +210,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 EditorGUI.indentLevel++;
                 disableGroup |= !m_MainLightRenderingModeProp.boolValue;
 
+                bool mcDisableGroup = disableGroup;
+
                 EditorGUI.BeginDisabledGroup(disableGroup);
                 EditorGUILayout.PropertyField(m_MainLightShadowsSupportedProp, Styles.supportsMainLightShadowsText);
                 EditorGUI.EndDisabledGroup();
@@ -211,6 +219,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 disableGroup |= !m_MainLightShadowsSupportedProp.boolValue;
                 EditorGUI.BeginDisabledGroup(disableGroup);
                 EditorGUILayout.PropertyField(m_MainLightShadowmapResolutionProp, Styles.mainLightShadowmapResolutionText);
+                EditorGUI.EndDisabledGroup();
+
+                EditorGUI.BeginDisabledGroup(mcDisableGroup);
+                EditorGUILayout.PropertyField(m_MainCharacterShadowsSupportedProp, Styles.supportsMainCharacterShadowsText);
+                EditorGUI.EndDisabledGroup();
+                mcDisableGroup |= !m_MainCharacterShadowsSupportedProp.boolValue;
+                EditorGUI.BeginDisabledGroup(mcDisableGroup);
+                EditorGUILayout.PropertyField(m_MainCharacterShadowmapResolutionProp, Styles.mainCharacterShadowmapResolutionText);
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.indentLevel--;

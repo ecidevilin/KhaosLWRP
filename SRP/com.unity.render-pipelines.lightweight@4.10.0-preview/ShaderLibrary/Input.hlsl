@@ -21,6 +21,9 @@ struct InputData
     half3   normalWS;
     half3   viewDirectionWS;
     float4  shadowCoord;
+#if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN
+	float4  shadowCoord2;
+#endif
     half    fogCoord;
     half3   vertexLighting;
     half3   bakedGI;

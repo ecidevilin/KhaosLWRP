@@ -67,6 +67,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public bool supportsSoftShadows;
         public int shadowmapDepthBufferBits;
         public List<Vector4> bias;
+        public bool supportsMainCharacterShadows;
+        public int mainCharacterShadowmapWidth;
+        public int mainCharacterShadowmapHeight;
     }
 
     public static class ShaderKeywordStrings
@@ -77,6 +80,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public static readonly string AdditionalLightsPixel = "_ADDITIONAL_LIGHTS";
         public static readonly string AdditionalLightShadows = "_ADDITIONAL_LIGHT_SHADOWS";
         public static readonly string SoftShadows = "_SHADOWS_SOFT";
+        public static readonly string MainCharacterShadows = "_MAIN_CHARACTER_SHADOWS";
         public static readonly string MixedLightingSubtractive = "_MIXED_LIGHTING_SUBTRACTIVE";
 
         public static readonly string DepthNoMsaa = "_DEPTH_NO_MSAA";

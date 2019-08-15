@@ -531,6 +531,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 13705760, guid: d17eb2dcec1c0634c99ee1e7fac66e02, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 13704426, guid: d17eb2dcec1c0634c99ee1e7fac66e02, type: 3}
       propertyPath: m_ReceiveShadows
       value: 1

@@ -64,6 +64,7 @@ half4       _MainCharacterShadowOffset1;
 half4       _MainCharacterShadowOffset2;
 half4       _MainCharacterShadowOffset3;
 CBUFFER_END
+half _IsMainCharacter;
 
 #if UNITY_REVERSED_Z
 #define BEYOND_SHADOW_FAR(shadowCoord) shadowCoord.z <= UNITY_RAW_FAR_CLIP_VALUE
@@ -208,7 +209,7 @@ float4 TransformWorldToShadowCoord(float3 positionWS)
 
 half MainLightRealtimeShadow(float4 shadowCoord)
 {
-#if !defined(_MAIN_LIGHT_SHADOWS) || defined(_RECEIVE_SHADOWS_OFF)
+#if (!defined(_MAIN_LIGHT_SHADOWS) && !defined(_MAIN_CHARACTER_SHADOWS)) || defined(_RECEIVE_SHADOWS_OFF)
     return 1.0h;
 #endif
 
@@ -218,6 +219,28 @@ half MainLightRealtimeShadow(float4 shadowCoord)
     ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
     half shadowStrength = GetMainLightShadowStrength();
     return SampleShadowmap(shadowCoord, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
+#endif
+}
+
+half MainLightRealtimeShadow(float4 shadowCoord, float4 shadowCoord2)
+{
+#if (!defined(_MAIN_LIGHT_SHADOWS) && !defined(_MAIN_CHARACTER_SHADOWS)) || defined(_RECEIVE_SHADOWS_OFF)
+	return 1.0h;
+#endif
+
+#if SHADOWS_SCREEN
+	return SampleScreenSpaceShadowmap(shadowCoord);
+#else
+	ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
+	half shadowStrength = GetMainLightShadowStrength();
+	half atten = SampleShadowmap(shadowCoord, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
+#ifdef _MAIN_CHARACTER_SHADOWS
+	if (_IsMainCharacter > 0.5)
+	{
+		atten = min(atten, SampleShadowmap(shadowCoord2, TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false));
+	}
+#endif
+	return atten;
 #endif
 }
 
@@ -241,5 +264,12 @@ float4 GetShadowCoord(VertexPositionInputs vertexInput)
     return TransformWorldToShadowCoord(vertexInput.positionWS);
 #endif
 }
+
+#if !SHADOWS_SCREEN
+float4 GetShadowCoordMC(VertexPositionInputs vertexInput)
+{
+	return mul(_MainCharacterWorldToShadow, float4(vertexInput.positionWS, 1));
+}
+#endif
 
 #endif

@@ -9,9 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: volund_inGame_007_volund_hairTop_mat
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
-  m_ShaderKeywords: _LIGHTMAPPING_DYNAMIC_LIGHTMAPS _MAIN_CHARACTER_SHADOWS _NORMALMAP
-    _SPECGLOSSMAP _UVSEC_UV1
-  m_LightmapFlags: 5
+  m_ShaderKeywords: _EMISSION _NORMALMAP
+  m_LightmapFlags: 6
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -83,6 +82,7 @@ Material:
     - _GlossyReflections: 1
     - _HelmetHairScale: 0.05
     - _HelmetHairStrength: 0
+    - _IsMainCharacter: 0
     - _KKPrimaryRootShift: 0.183
     - _KKPrimarySpecularExponent: 41
     - _KKReflectionGrayScale: 5

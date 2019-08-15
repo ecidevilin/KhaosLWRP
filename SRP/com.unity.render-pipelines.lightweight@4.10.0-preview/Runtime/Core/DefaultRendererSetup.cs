@@ -133,9 +133,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     renderer.EnqueuePass(m_MainLightShadowCasterPass);
             }
 
-            if(m_MainCharacterShadowCasterPass.Setup(MainCharacterShadowmap, ref renderingData))
+            if (renderingData.shadowData.supportsMainCharacterShadows)
             {
-                renderer.EnqueuePass(m_MainCharacterShadowCasterPass);
+                if (m_MainCharacterShadowCasterPass.Setup(MainCharacterShadowmap, ref renderingData))
+                {
+                    renderer.EnqueuePass(m_MainCharacterShadowCasterPass);
+                }
             }
 
             if (renderingData.shadowData.supportsAdditionalLightShadows)

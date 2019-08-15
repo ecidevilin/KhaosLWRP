@@ -75,6 +75,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public float shadowDepthBias { get; private set; }
             public float shadowNormalBias { get; private set; }
             public bool supportsSoftShadows { get; private set; }
+            public bool supportsMainCharacterShadows { get; private set; }
+            public int mainCharacterShadowmapResolution { get; private set; }
             public bool supportsDynamicBatching { get; private set; }
             public bool mixedLightingSupported { get; private set; }
 
@@ -111,6 +113,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cache.shadowDepthBias = asset.shadowDepthBias;
                 cache.shadowNormalBias = asset.shadowNormalBias;
                 cache.supportsSoftShadows = asset.supportsSoftShadows;
+                cache.supportsMainCharacterShadows = asset.supportsMainCharacterShadows;
+                cache.mainCharacterShadowmapResolution = asset.mainCharacterShadowmapResolution;
 
                 // Advanced settings
                 cache.supportsDynamicBatching = asset.supportsDynamicBatching;
@@ -385,6 +389,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             shadowData.mainLightShadowCascadesCount = (shadowData.requiresScreenSpaceShadowResolve) ? settings.cascadeCount : 1;
             shadowData.mainLightShadowmapWidth = settings.mainLightShadowmapResolution;
             shadowData.mainLightShadowmapHeight = settings.mainLightShadowmapResolution;
+            shadowData.mainCharacterShadowmapWidth = settings.mainCharacterShadowmapResolution;
+            shadowData.mainCharacterShadowmapHeight = settings.mainCharacterShadowmapResolution;
 
             switch (shadowData.mainLightShadowCascadesCount)
             {
@@ -405,6 +411,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             shadowData.additionalLightsShadowmapWidth = shadowData.additionalLightsShadowmapHeight = settings.additionalLightsShadowmapResolution;
             shadowData.supportsSoftShadows = settings.supportsSoftShadows && (shadowData.supportsMainLightShadows || shadowData.supportsAdditionalLightShadows);
             shadowData.shadowmapDepthBufferBits = 16;
+
+            shadowData.supportsMainCharacterShadows = settings.supportsMainCharacterShadows && mainLightCastShadows;
         }
 
         static void InitializeLightData(PipelineSettings settings, List<VisibleLight> visibleLights, int mainLightIndex, int maxAdditionalLights,

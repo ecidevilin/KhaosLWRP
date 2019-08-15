@@ -130,6 +130,13 @@ Light GetMainLight(float4 shadowCoord)
     return light;
 }
 
+Light GetMainLight(float4 shadowCoord, float4 shadowCoord2)
+{
+	Light light = GetMainLight();
+	light.shadowAttenuation = MainLightRealtimeShadow(shadowCoord, shadowCoord2);
+	return light;
+}
+
 Light GetAdditionalLight(half i, float3 positionWS)
 {
     int perObjectLightIndex = GetPerObjectLightIndex(i);
@@ -500,7 +507,11 @@ half4 LightweightFragmentPBR(InputData inputData, half3 albedo, half metallic, h
     BRDFData brdfData;
     InitializeBRDFData(albedo, metallic, specular, smoothness, alpha, brdfData);
 
-    Light mainLight = GetMainLight(inputData.shadowCoord);
+#if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN
+	Light mainLight = GetMainLight(inputData.shadowCoord, inputData.shadowCoord2);
+#else
+	Light mainLight = GetMainLight(inputData.shadowCoord);
+#endif
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI, half4(0, 0, 0, 0));
 
     half3 color = GlobalIllumination(brdfData, inputData.bakedGI, occlusion, inputData.normalWS, inputData.viewDirectionWS);

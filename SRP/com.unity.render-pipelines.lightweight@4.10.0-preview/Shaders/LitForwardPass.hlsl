@@ -36,6 +36,9 @@ struct Varyings
 #ifdef _MAIN_LIGHT_SHADOWS
     float4 shadowCoord              : TEXCOORD7;
 #endif
+#if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN
+	float4 shadowCoord2				: TEXCOORD8;
+#endif
 
     float4 positionCS               : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -70,6 +73,13 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
     inputData.shadowCoord = input.shadowCoord;
 #else
     inputData.shadowCoord = float4(0, 0, 0, 0);
+#endif
+#if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN
+#ifdef _RECEIVE_SHADOWS_OFF
+	inputData.shadowCoord2 = float4(0, 0, 0, 0);
+#else
+	inputData.shadowCoord2 = input.shadowCoord2;
+#endif
 #endif
     inputData.fogCoord = input.fogFactorAndVertexLight.x;
     inputData.vertexLighting = input.fogFactorAndVertexLight.yzw;
@@ -121,6 +131,9 @@ Varyings LitPassVertex(Attributes input)
 
 #if defined(_MAIN_LIGHT_SHADOWS) && !defined(_RECEIVE_SHADOWS_OFF)
     output.shadowCoord = GetShadowCoord(vertexInput);
+#endif
+#if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN && !defined(_RECEIVE_SHADOWS_OFF)
+	output.shadowCoord2 = GetShadowCoordMC(vertexInput);
 #endif
 
     output.positionCS = vertexInput.positionCS;
