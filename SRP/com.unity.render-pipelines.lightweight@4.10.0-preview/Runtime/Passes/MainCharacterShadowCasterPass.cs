@@ -52,6 +52,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 Debug.LogWarning("Only directional lights are supported as main light.");
             }
 
+            Bounds bounds;
+            if (!renderingData.cullResults.GetShadowCasterBounds(shadowLightIndex, out bounds))
+                return false;
+
             return true;
         }
 
@@ -131,7 +135,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             if (renderer == null)
                 throw new ArgumentNullException("renderer");
 
-            if (!renderingData.shadowData.supportsMainLightShadows)
+            if (!renderingData.shadowData.supportsMainCharacterShadows)
             {
                 return;
             }
