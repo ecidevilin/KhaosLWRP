@@ -11,9 +11,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         }
         const string k_RenderScreenSpaceDeepShadowMaps = "Render Screen Space Deep Shadow Maps";
 
-        const int k_Dimension = 1024;
-        const int k_Elements = 32;
-
         private ComputeBuffer _CountBuffer;
         private ComputeBuffer _DataBuffer;
 

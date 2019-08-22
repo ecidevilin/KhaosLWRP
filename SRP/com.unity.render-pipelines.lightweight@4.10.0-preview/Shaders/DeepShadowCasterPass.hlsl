@@ -6,8 +6,8 @@
 float4 _ShadowBias; // x: depth bias, y: normal bias
 float3 _LightDirection;
 
-uint _Dimension;
-uint _Elements;
+uint _DeepShadowMapSize;
+uint _DeepShadowMapDepth;
 
 RWStructuredBuffer<uint> _CountBufferUAV	: register(u1);
 RWStructuredBuffer<float2> _DataBufferUAV	: register(u2);
@@ -64,12 +64,12 @@ half4 DeepShadowCasterFragment(Varyings input) : SV_TARGET
 {
 	half alpha = Alpha(SampleAlbedoAlpha(input.uv.xy, TEXTURE2D_PARAM(_MainTex, sampler_MainTex)).a, _Color, _Cutoff);
 
-	uint2 lightUV = input.uv.zw * _Dimension;
-	uint idx = lightUV.y * _Dimension + lightUV.x;
+	uint2 lightUV = input.uv.zw * _DeepShadowMapSize;
+	uint idx = lightUV.y * _DeepShadowMapSize + lightUV.x;
 	uint originalVal = 0;
 	InterlockedAdd(_CountBufferUAV[idx], 1, originalVal);
-	originalVal = min(_Elements - 1, originalVal);
-	uint offset = idx * _Elements;
+	originalVal = min(_DeepShadowMapDepth - 1, originalVal);
+	uint offset = idx * _DeepShadowMapDepth;
 	_DataBufferUAV[offset + originalVal] = float2(input.positionCS.z, 1 - alpha);
 	return 0;
 }

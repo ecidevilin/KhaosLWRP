@@ -70,8 +70,8 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
             return output;
         }
 
-		uint _Dimension;
-		uint _Elements;
+		uint _DeepShadowMapSize;
+		uint _DeepShadowMapDepth;
 
 		StructuredBuffer<uint> _CountBuffer;
 		StructuredBuffer<float2> _DataBuffer;
@@ -105,14 +105,14 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 
             //Fetch shadow coordinates for cascade.
             float4 coords = mul(_DeepShadowMapsWorldToShadow, float4(wpos, 1));
-			uint2 shadowUV = coords.xy * _Dimension;
-			uint lidx = shadowUV.y * _Dimension + shadowUV.x;
+			uint2 shadowUV = coords.xy * _DeepShadowMapSize;
+			uint lidx = shadowUV.y * _DeepShadowMapSize + shadowUV.x;
 			uint num = _CountBuffer[lidx];
-			num = min(num, _Elements);
+			num = min(num, _DeepShadowMapDepth);
 
 			float depth = coords.z;
 
-			uint offset = lidx * _Elements;
+			uint offset = lidx * _DeepShadowMapDepth;
 
 			uint i;
 			float2 data;
