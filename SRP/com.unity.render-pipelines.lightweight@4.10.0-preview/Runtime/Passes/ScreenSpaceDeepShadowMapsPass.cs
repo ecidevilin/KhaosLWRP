@@ -21,8 +21,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         
         private RenderTextureFormat _ShadowLutFormat;
 
-        private RenderTargetHandle _DeepShadowLutHandle;
-        private RenderTargetHandle _DeepShadowTmpHandle;
+        private RenderTargetHandle _Destination;
+
+        private RenderTexture _DeepShadowLut;
+        private RenderTexture _DeepShadowTmp;
         private RenderTextureDescriptor _Descriptor;
        
 
@@ -34,7 +36,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 : RenderTextureFormat.ARGB32;
         }
 
-        public bool Setup(ScriptableRenderer renderer, RenderTextureDescriptor baseDescriptor, RenderTargetHandle deepShadowLutHandle, ref RenderingData renderingData)
+        public bool Setup(ScriptableRenderer renderer, RenderTextureDescriptor baseDescriptor, RenderTargetHandle destination, ref RenderingData renderingData)
         {
 
             //int shadowLightIndex = renderingData.lightData.mainLightIndex;
@@ -61,8 +63,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             _CountBuffer = renderer.GetBuffer(ComputeBufferHandle.DeepShadowMapsCount);
             _DataBuffer = renderer.GetBuffer(ComputeBufferHandle.DeepShadowMapsData);
 
-            _DeepShadowLutHandle = deepShadowLutHandle;
-            _DeepShadowTmpHandle.Init("_DeepShadowTmp");
+            _Destination = destination;
+            
             _Descriptor = baseDescriptor;
             _Descriptor.colorFormat = _ShadowLutFormat;
             _Descriptor.depthBufferBits = 0;
@@ -74,15 +76,15 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (cmd == null)
                 throw new ArgumentNullException("cmd");
-            if (_DeepShadowLutHandle != RenderTargetHandle.CameraTarget)
+            if (_DeepShadowLut)
             {
-                cmd.ReleaseTemporaryRT(_DeepShadowLutHandle.id);
-                _DeepShadowLutHandle = RenderTargetHandle.CameraTarget;
+                RenderTexture.ReleaseTemporary(_DeepShadowLut);
+                _DeepShadowLut = null;
             }
-            if (_DeepShadowTmpHandle != RenderTargetHandle.CameraTarget)
+            if (_DeepShadowTmp)
             {
-                cmd.ReleaseTemporaryRT(_DeepShadowTmpHandle.id);
-                _DeepShadowTmpHandle = RenderTargetHandle.CameraTarget;
+                RenderTexture.ReleaseTemporary(_DeepShadowTmp);
+                _DeepShadowTmp = null;
             }
             base.FrameCleanup(cmd);
         }
@@ -107,6 +109,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             VisibleLight shadowLight = lightData.visibleLights[shadowLightIndex];
             ShadowData shadowData = renderingData.shadowData;
 
+            RenderTexture result;
+
             CommandBuffer cmd = CommandBufferPool.Get(k_RenderScreenSpaceDeepShadowMaps);
             using (new ProfilingSample(cmd, k_RenderScreenSpaceDeepShadowMaps))
             {
@@ -115,25 +119,46 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 ssdsm.SetBuffer(Shader.PropertyToID("_CountBuffer"), _CountBuffer);
                 ssdsm.SetBuffer(Shader.PropertyToID("_DataBuffer"), _DataBuffer);
                 //TODO: Settings for blurring
-                cmd.GetTemporaryRT(_DeepShadowLutHandle.id, _Descriptor, FilterMode.Bilinear);
-                RenderTargetIdentifier DeepShadowLut = _DeepShadowLutHandle.Identifier();
-                SetRenderTarget(cmd, DeepShadowLut, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                _DeepShadowLut = RenderTexture.GetTemporary(_Descriptor);
+                _DeepShadowLut.filterMode = FilterMode.Bilinear;
+                _DeepShadowLut.wrapMode = TextureWrapMode.Clamp;
+                
+                SetRenderTarget(cmd, _DeepShadowLut, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                     ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
-                cmd.Blit(null, DeepShadowLut, ssdsm);
+                cmd.Blit(null, _DeepShadowLut, ssdsm);
 
                 // Blur
                 Material pom = renderer.GetMaterial(MaterialHandle.GaussianBlur);
                 pom.SetFloat("_SampleOffset", 1);
-                cmd.GetTemporaryRT(_DeepShadowTmpHandle.id, _Descriptor, FilterMode.Bilinear);
-                RenderTargetIdentifier DeepShadowTmp = _DeepShadowTmpHandle.Identifier();
-                SetRenderTarget(cmd, DeepShadowTmp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                _DeepShadowTmp = RenderTexture.GetTemporary(_Descriptor);
+                _DeepShadowTmp.filterMode = FilterMode.Bilinear;
+                _DeepShadowTmp.wrapMode = TextureWrapMode.Clamp;
+                SetRenderTarget(cmd, _DeepShadowTmp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                     ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
-                cmd.Blit(DeepShadowLut, DeepShadowTmp, pom);
+                cmd.Blit(_DeepShadowLut, _DeepShadowTmp, pom);
                 //TODO : for stereo
-            }
 
+                result = _DeepShadowTmp;
+
+                context.ExecuteCommandBuffer(cmd);
+                cmd.Clear();
+
+                SetupScreenSpaceDeepShadowMapsConstants(cmd, ref shadowData, shadowLight, result);
+            }
+            //SetKeyword
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
+        }
+        void SetupScreenSpaceDeepShadowMapsConstants(CommandBuffer cmd, ref ShadowData shadowData, VisibleLight shadowLight, RenderTexture rt)
+        {
+            Light light = shadowLight.light;
+
+            float invShadowAtlasWidth = 1.0f / shadowData.mainCharacterShadowmapWidth;
+            float invShadowAtlasHeight = 1.0f / shadowData.mainCharacterShadowmapHeight;
+            float invHalfShadowAtlasWidth = 0.5f * invShadowAtlasWidth;
+            float invHalfShadowAtlasHeight = 0.5f * invShadowAtlasHeight;
+            cmd.SetGlobalTexture(_Destination.id, rt);
+
         }
     }
 }

@@ -77,6 +77,8 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 		StructuredBuffer<float2> _DataBuffer;
 
 		float4x4 _DeepShadowMapsWorldToShadow;
+		half _DeepShadowStrength;
+
 
         half4 Fragment(Varyings input) : SV_Target
         {
@@ -131,6 +133,8 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 					break;
 				}
 			}
+			shading = LerpWhiteTo(shading, _DeepShadowStrength);
+
 			return shading;
         }
 
