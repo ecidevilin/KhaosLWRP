@@ -100,7 +100,8 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
             half shadowStrength = GetMainLightShadowStrength();
             half atten = SampleShadowmap(coords, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
 #ifdef _MAIN_CHARACTER_SHADOWS
-			atten = min(atten, SampleShadowmap(mul(_MainCharacterWorldToShadow, float4(wpos, 1.0)), TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false));
+			float4 mcCoords = mul(_MainCharacterWorldToShadow, float4(wpos, 1.0));
+			atten = min(atten, SampleShadowmap(mcCoords, TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false));
 #endif
 			return atten;
         }

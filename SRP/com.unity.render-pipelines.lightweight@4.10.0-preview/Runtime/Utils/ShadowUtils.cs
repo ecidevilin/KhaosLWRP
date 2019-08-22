@@ -268,8 +268,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             Vector3 intialLightPos = center;// - light.transform.forward.normalized * radius;
 
             projMatrix = Matrix4x4.Ortho(-radius, radius, -radius, radius, radius * 0.1f, radius * 2.3f);
+            projMatrix = GL.GetGPUProjectionMatrix(projMatrix, false);
             viewMatrix = light.transform.worldToLocalMatrix;
-            viewMatrix.SetColumn(2, -viewMatrix.GetColumn(2));
+            //viewMatrix.SetColumn(2, -viewMatrix.GetColumn(2));
             Vector4 viewTsl = -viewMatrix.MultiplyVector(intialLightPos);
             viewTsl.z -= radius * 1.2f;
             viewTsl.w = 1;

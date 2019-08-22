@@ -187,18 +187,18 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 renderer.EnqueuePass(m_DepthNormalsPass);
             }
 
-            if (resolveShadowsInScreenSpace)
-            {
-                m_ScreenSpaceShadowResolvePass.Setup(baseDescriptor, ScreenSpaceShadowmap);
-                renderer.EnqueuePass(m_ScreenSpaceShadowResolvePass);
-            }
-
             if (renderDeepShadowMap)
             {
                 if (_ScreenSpaceDeepShadowMapsPass.Setup(renderer, baseDescriptor, ScreenSpaceDeepShadowLut, ref renderingData))
                 {
                     renderer.EnqueuePass(_ScreenSpaceDeepShadowMapsPass);
                 }
+            }
+
+            if (resolveShadowsInScreenSpace)
+            {
+                m_ScreenSpaceShadowResolvePass.Setup(baseDescriptor, ScreenSpaceShadowmap);
+                renderer.EnqueuePass(m_ScreenSpaceShadowResolvePass);
             }
 
 

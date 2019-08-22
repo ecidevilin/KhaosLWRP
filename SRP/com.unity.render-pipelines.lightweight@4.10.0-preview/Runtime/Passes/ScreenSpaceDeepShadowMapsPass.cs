@@ -27,7 +27,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         public ScreenSpaceDeepShadowMapsPass()
         {
-            RegisterShaderPassName("DeepShadowCaster");
             _ShadowLutFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.R8)
                 ? RenderTextureFormat.R8
                 : RenderTextureFormat.ARGB32;
@@ -119,7 +118,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 _DeepShadowLut = RenderTexture.GetTemporary(_Descriptor);
                 _DeepShadowLut.filterMode = FilterMode.Bilinear;
                 _DeepShadowLut.wrapMode = TextureWrapMode.Clamp;
-                
+                _DeepShadowLut.name = "_DeepShadowLut";
+
+
                 SetRenderTarget(cmd, _DeepShadowLut, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                     ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
                 cmd.Blit(null, _DeepShadowLut, ssdsm);
@@ -130,6 +131,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 _DeepShadowTmp = RenderTexture.GetTemporary(_Descriptor);
                 _DeepShadowTmp.filterMode = FilterMode.Bilinear;
                 _DeepShadowTmp.wrapMode = TextureWrapMode.Clamp;
+                _DeepShadowTmp.name = "_DeepShadowTmp";
                 SetRenderTarget(cmd, _DeepShadowTmp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                     ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
                 cmd.Blit(_DeepShadowLut, _DeepShadowTmp, pom);
