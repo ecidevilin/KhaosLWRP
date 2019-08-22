@@ -7,6 +7,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         Sampling,
         Blit,
         ScreenSpaceShadow,
+        ScreenSpaceDeepShadowMaps,
+        GaussianBlur,
         Count,
     }
 }

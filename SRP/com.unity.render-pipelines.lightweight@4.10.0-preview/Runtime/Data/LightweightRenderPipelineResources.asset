@@ -17,3 +17,7 @@ MonoBehaviour:
   m_ScreenSpaceShadowShader: {fileID: 4800000, guid: 0f854b35a0cf61a429bd5dcfea30eddd,
     type: 3}
   m_SamplingShader: {fileID: 4800000, guid: 04c410c9937594faa893a11dceb85f7e, type: 3}
+  _ScreenSpaceDeepShadowMapsShader: {fileID: 4800000, guid: 4388c5c99b8b32e49b86e366742ed32b,
+    type: 3}
+  _ResetDeepShadowDataCompute: {fileID: 7200000, guid: 17cd55a304520304a95f4e2d8d47f262,
+    type: 3}

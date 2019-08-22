@@ -10,9 +10,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private DepthNormalsPass m_DepthNormalsPass;
         private MainLightShadowCasterPass m_MainLightShadowCasterPass;
         private MainCharacterShadowCasterPass m_MainCharacterShadowCasterPass;
+        private DeepShadowCasterPass _DeepShadowCasterPass;
         private AdditionalLightsShadowCasterPass m_AdditionalLightsShadowCasterPass;
         private SetupForwardRenderingPass m_SetupForwardRenderingPass;
         private ScreenSpaceShadowResolvePass m_ScreenSpaceShadowResolvePass;
+        private ScreenSpaceDeepShadowMapsPass _ScreenSpaceDeepShadowMapsPass;
         private CreateLightweightRenderTexturesPass m_CreateLightweightRenderTexturesPass;
         private BeginXRRenderingPass m_BeginXrRenderingPass;
         private SetupLightweightConstanstPass m_SetupLightweightConstants;
@@ -40,6 +42,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private RenderTargetHandle MainCharacterShadowmap;
         private RenderTargetHandle AdditionalLightsShadowmap;
         private RenderTargetHandle ScreenSpaceShadowmap;
+        private RenderTargetHandle ScreenSpaceDeepShadowLut;
 
         private List<IBeforeRender> m_BeforeRenderPasses = new List<IBeforeRender>(10);
 
@@ -56,8 +59,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             m_MainLightShadowCasterPass = new MainLightShadowCasterPass();
             m_MainCharacterShadowCasterPass = new MainCharacterShadowCasterPass();
             m_AdditionalLightsShadowCasterPass = new AdditionalLightsShadowCasterPass();
+            _DeepShadowCasterPass = new DeepShadowCasterPass();
             m_SetupForwardRenderingPass = new SetupForwardRenderingPass();
             m_ScreenSpaceShadowResolvePass = new ScreenSpaceShadowResolvePass();
+            _ScreenSpaceDeepShadowMapsPass = new ScreenSpaceDeepShadowMapsPass();
             m_CreateLightweightRenderTexturesPass = new CreateLightweightRenderTexturesPass();
             m_BeginXrRenderingPass = new BeginXRRenderingPass();
             m_SetupLightweightConstants = new SetupLightweightConstanstPass();
@@ -86,6 +91,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             MainCharacterShadowmap.Init("_MainCharacterShadowmapTexture");
             AdditionalLightsShadowmap.Init("_AdditionalLightsShadowmapTexture");
             ScreenSpaceShadowmap.Init("_ScreenSpaceShadowmapTexture");
+            ScreenSpaceDeepShadowLut.Init("_ScreenSpaceDeepShadowLut");
 
             m_Initialized = true;
         }
@@ -141,6 +147,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 }
             }
 
+            bool renderDeepShadowMap = true;
+            renderDeepShadowMap &= _DeepShadowCasterPass.Setup(renderer, ref renderingData);
+            if (renderDeepShadowMap)
+            {
+                renderer.EnqueuePass(_DeepShadowCasterPass);
+            }
+
             if (renderingData.shadowData.supportsAdditionalLightShadows)
             {
                 bool additionalLightShadows = m_AdditionalLightsShadowCasterPass.Setup(AdditionalLightsShadowmap, ref renderingData, renderer.maxVisibleAdditionalLights);
@@ -179,6 +192,15 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 m_ScreenSpaceShadowResolvePass.Setup(baseDescriptor, ScreenSpaceShadowmap);
                 renderer.EnqueuePass(m_ScreenSpaceShadowResolvePass);
             }
+
+            if (renderDeepShadowMap)
+            {
+                if (_ScreenSpaceDeepShadowMapsPass.Setup(renderer, baseDescriptor, ScreenSpaceDeepShadowLut, ref renderingData))
+                {
+                    renderer.EnqueuePass(_ScreenSpaceDeepShadowMapsPass);
+                }
+            }
+
 
             if (renderingData.cameraData.isStereoEnabled)
                 renderer.EnqueuePass(m_BeginXrRenderingPass);

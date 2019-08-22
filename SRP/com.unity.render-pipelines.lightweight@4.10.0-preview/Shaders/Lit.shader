@@ -210,6 +210,34 @@ Shader "Lightweight Render Pipeline/Lit"
 			ENDHLSL
 		}
 
+		Pass
+		{
+			Name "DeepShadowCaster"
+			Tags {"LightMode" = "DeepShadowCaster"}
+			ZWrite Off
+			//ColorMask 0
+			Cull[_Cull]
+
+			HLSLPROGRAM
+			#pragma target 4.5
+			#pragma exclude_renderers d3d11_9x gles
+
+			#pragma vertex DeepShadowCasterVertex
+			#pragma fragment DeepShadowCasterFragment
+
+			// -------------------------------------
+			// Material Keywords
+			#pragma shader_feature _ALPHATEST_ON
+			#pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+
+			//--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
+			#include "LitInput.hlsl"
+			#include "DeepShadowCasterPass.hlsl"
+			ENDHLSL
+		}
+
         // This pass it not used during regular rendering, only for lightmap baking.
         Pass
         {

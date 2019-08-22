@@ -61,57 +61,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         bool GetVPMatrix(Light light)
         {
-            GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-            if (null == players || 0 == players.Length)
-            {
-                return false;
-            }
-            _Renderers.Clear();
-            Bounds bounds = new Bounds();
-            foreach (var p in players)
-            {
-                Renderer r = p.GetComponent<Renderer>();
-                if (null != r && r.enabled && r.shadowCastingMode != ShadowCastingMode.Off)
-                {
-                    if (r is SkinnedMeshRenderer)
-                    {
-                        (r as SkinnedMeshRenderer).sharedMesh.RecalculateBounds();
-                    }
-                    Bounds rb = r.bounds;
-                    if (0 != _Renderers.Count)
-                    {
-                        bounds.Encapsulate(rb);
-                    }
-                    else
-                    {
-                        bounds = rb;
-                    }
-                    _Renderers.Add(r);
-                }
-            }
-            if (0 == _Renderers.Count)
+            if (!ShadowUtils.GetVPMatrixWithTag(light, "Player", _Renderers, out m_ViewMatrix, out m_ProjMatrix))
             {
                 return false;
             }
 
-            Vector3 axisX = light.transform.right.normalized;
-            Vector3 axisY = light.transform.up.normalized;
-            Vector3 axisZ = light.transform.worldToLocalMatrix.GetColumn(2).normalized;
-
-            Vector3 center = bounds.center;
-            float radius = bounds.extents.magnitude;
-            Vector3 intialLightPos = center;// - light.transform.forward.normalized * radius;
-
-            Matrix4x4 projMatrix = Matrix4x4.Ortho(-radius, radius, -radius, radius, radius * 0.1f, radius * 2.3f);
-            Matrix4x4 viewMatrix = light.transform.worldToLocalMatrix;
-            viewMatrix.SetColumn(2, -viewMatrix.GetColumn(2));
-            Vector4 viewTsl = -viewMatrix.MultiplyVector(intialLightPos);
-            viewTsl.z -= radius * 1.2f;
-            viewTsl.w = 1;
-            viewMatrix.SetColumn(3, viewTsl);
-            m_MainCharacterShadowMatrix = ShadowUtils.GetShadowTransform(projMatrix, viewMatrix);
-            m_ViewMatrix = viewMatrix;
-            m_ProjMatrix = projMatrix;
+            m_MainCharacterShadowMatrix = ShadowUtils.GetShadowTransform(m_ProjMatrix, m_ViewMatrix);
 
             return true;
         }

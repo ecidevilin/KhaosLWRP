@@ -1,0 +1,17 @@
+﻿#pragma kernel KernelResetBuffer
+
+uint _Dimension;
+uint _Elements;
+
+RWStructuredBuffer<uint> _CountBuffer;
+RWStructuredBuffer<float2> _DataBuffer;
+
+[numthreads(8,8,1)]
+void KernelResetBuffer(uint3 id : SV_DispatchThreadID)
+{
+	_CountBuffer[id.y * _Dimension + id.x] = 0;
+	//for (int i = 0; i < _Elements; i++)
+	//{
+	//	_DataBuffer[_Elements * (id.y * _Dimension + id.x) + i] = 1;
+	//}
+}

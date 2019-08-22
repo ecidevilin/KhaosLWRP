@@ -110,6 +110,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         const string k_ReleaseResourcesTag = "Release Resources";
         readonly Material[] m_Materials;
+        readonly ComputeShader[] _Computes;
+        readonly ComputeBuffer[] _Buffers;
 
         public ScriptableRenderer(LightweightRenderPipelineAsset pipelineAsset)
         {
@@ -123,6 +125,23 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 CoreUtils.CreateEngineMaterial(pipelineAsset.samplingShader),
                 CoreUtils.CreateEngineMaterial(pipelineAsset.blitShader),
                 CoreUtils.CreateEngineMaterial(pipelineAsset.screenSpaceShadowShader),
+                CoreUtils.CreateEngineMaterial(pipelineAsset.screenSpaceDeepShadowMapsShader),
+                CoreUtils.CreateEngineMaterial(pipelineAsset.gaussianBlurShader),
+            };
+
+            _Computes = new[]
+            {
+                pipelineAsset.resetDeepShadowDataCompute,
+            };
+
+            //TODO: settings
+            ComputeBuffer DeepShadowMapsCountBuffer = null;
+            ComputeBuffer DeepShadowMapsDataBuffer = null;
+            DeepShadowCasterPass.NewDeepShadowMapsBuffer(ref DeepShadowMapsCountBuffer, ref DeepShadowMapsDataBuffer);
+            _Buffers = new[]
+            {
+                DeepShadowMapsCountBuffer,
+                DeepShadowMapsDataBuffer,
             };
 
             postProcessingContext = new PostProcessRenderContext();
@@ -138,6 +157,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             for (int i = 0; i < m_Materials.Length; ++i)
                 CoreUtils.Destroy(m_Materials[i]);
+
+            for (int i = 0; i < _Buffers.Length; ++i)
+            {
+                _Buffers[i].Dispose();
+            }
         }
 
         public void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
@@ -172,6 +196,32 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
 
             return m_Materials[handleID];
+        }
+
+        public ComputeShader GetCompute(ComputeHandle handle)
+        {
+            int handleID = (int)handle;
+            if (handleID >= _Computes.Length)
+            {
+                Debug.LogError(string.Format("Compute {0} is not registered.",
+                    Enum.GetName(typeof(ComputeHandle), handleID)));
+                return null;
+            }
+
+            return _Computes[handleID];
+        }
+
+        public ComputeBuffer GetBuffer(ComputeBufferHandle handle)
+        {
+            int handleID = (int)handle;
+            if (handleID >= _Buffers.Length)
+            {
+                Debug.LogError(string.Format("Buffer {0} is not registered.",
+                    Enum.GetName(typeof(ComputeBufferHandle), handleID)));
+                return null;
+            }
+
+            return _Buffers[handleID];
         }
 
         public void Clear()

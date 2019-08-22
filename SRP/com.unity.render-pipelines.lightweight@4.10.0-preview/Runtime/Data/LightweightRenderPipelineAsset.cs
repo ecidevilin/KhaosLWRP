@@ -466,6 +466,21 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             get { return resources != null ? resources.samplingShader : null; }
         }
         
+        public Shader screenSpaceDeepShadowMapsShader
+        {
+            get { return resources != null ? resources.screenSpaceDeepShadowMapsShader : null; }
+        }
+
+        public Shader gaussianBlurShader
+        {
+            get { return resources != null ? resources.gaussianBlurShader : null; }
+        }
+
+        public ComputeShader resetDeepShadowDataCompute
+        {
+            get { return resources != null ? resources.resetDeepShadowDataCompute : null; }
+        }
+
         public void OnBeforeSerialize()
         {
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
@@ -219,6 +220,62 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             // Apply texture scale and offset to save a MAD in shader.
             return textureScaleAndBias * worldToShadow;
+        }
+
+        public static bool GetVPMatrixWithTag(Light light, string tag, List<Renderer> renderers, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix)
+        {
+            viewMatrix = Matrix4x4.identity;
+            projMatrix = Matrix4x4.identity;
+            GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+            if (null == objs || 0 == objs.Length)
+            {
+                return false;
+            }
+            renderers.Clear();
+            Bounds bounds = new Bounds();
+            foreach (var p in objs)
+            {
+                Renderer r = p.GetComponent<Renderer>();
+                if (null != r && r.enabled && r.shadowCastingMode != ShadowCastingMode.Off)
+                {
+                    if (r is SkinnedMeshRenderer)
+                    {
+                        (r as SkinnedMeshRenderer).sharedMesh.RecalculateBounds();
+                    }
+                    Bounds rb = r.bounds;
+                    if (0 != renderers.Count)
+                    {
+                        bounds.Encapsulate(rb);
+                    }
+                    else
+                    {
+                        bounds = rb;
+                    }
+                    renderers.Add(r);
+                }
+            }
+            if (0 == renderers.Count)
+            {
+                return false;
+            }
+
+            Vector3 axisX = light.transform.right.normalized;
+            Vector3 axisY = light.transform.up.normalized;
+            Vector3 axisZ = light.transform.worldToLocalMatrix.GetColumn(2).normalized;
+
+            Vector3 center = bounds.center;
+            float radius = bounds.extents.magnitude;
+            Vector3 intialLightPos = center;// - light.transform.forward.normalized * radius;
+
+            projMatrix = Matrix4x4.Ortho(-radius, radius, -radius, radius, radius * 0.1f, radius * 2.3f);
+            viewMatrix = light.transform.worldToLocalMatrix;
+            viewMatrix.SetColumn(2, -viewMatrix.GetColumn(2));
+            Vector4 viewTsl = -viewMatrix.MultiplyVector(intialLightPos);
+            viewTsl.z -= radius * 1.2f;
+            viewTsl.w = 1;
+            viewMatrix.SetColumn(3, viewTsl);
+
+            return true;
         }
     }
 }
