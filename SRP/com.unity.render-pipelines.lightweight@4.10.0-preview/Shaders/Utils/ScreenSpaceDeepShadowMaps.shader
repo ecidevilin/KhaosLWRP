@@ -109,6 +109,10 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 			uint lidx = shadowUV.y * _DeepShadowMapSize + shadowUV.x;
 			uint num = _CountBuffer[lidx];
 			num = min(num, _DeepShadowMapDepth);
+			if (num == 0)
+			{
+				return 1;
+			}
 
 			float depth = coords.z;
 
