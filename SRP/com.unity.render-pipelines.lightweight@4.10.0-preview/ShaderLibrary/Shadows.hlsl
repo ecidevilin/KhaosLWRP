@@ -63,6 +63,7 @@ half4       _MainCharacterShadowOffset0;
 half4       _MainCharacterShadowOffset1;
 half4       _MainCharacterShadowOffset2;
 half4       _MainCharacterShadowOffset3;
+float4		_MainCharacterCullingSphere;
 CBUFFER_END
 half _IsMainCharacter;
 
@@ -235,9 +236,10 @@ half MainLightRealtimeShadow(float4 shadowCoord, float4 shadowCoord2)
 	half shadowStrength = GetMainLightShadowStrength();
 	half atten = SampleShadowmap(shadowCoord, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
 #ifdef _MAIN_CHARACTER_SHADOWS
-	if (_IsMainCharacter > 0.5)
+	//if (_IsMainCharacter > 0.5)
 	{
-		atten = min(atten, SampleShadowmap(shadowCoord2, TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false));
+		half mcAtten = SampleShadowmap(shadowCoord2, TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false);
+		atten = lerp(atten, mcAtten, shadowCoord2.w);
 	}
 #endif
 	return atten;
@@ -265,10 +267,18 @@ float4 GetShadowCoord(VertexPositionInputs vertexInput)
 #endif
 }
 
+float4 TransformWorldToMCShadowCoord(float3 positionWS)
+{
+	float3 fromCenter = positionWS - _MainCharacterCullingSphere.xyz;
+	float distances2 = dot(fromCenter, fromCenter);
+	half weight = distances2 < _MainCharacterCullingSphere.z;
+	return mul(_MainCharacterWorldToShadow, float4(positionWS, 1)) * weight;
+}
+
 #if !SHADOWS_SCREEN
 float4 GetShadowCoordMC(VertexPositionInputs vertexInput)
 {
-	return mul(_MainCharacterWorldToShadow, float4(vertexInput.positionWS, 1));
+	return TransformWorldToMCShadowCoord(vertexInput.positionWS);
 }
 #endif
 

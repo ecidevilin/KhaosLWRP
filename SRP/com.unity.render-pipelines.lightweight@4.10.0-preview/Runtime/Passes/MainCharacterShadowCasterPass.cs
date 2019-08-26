@@ -13,6 +13,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         Matrix4x4 m_ViewMatrix;
         Matrix4x4 m_ProjMatrix;
+        Vector4 m_CullingSphere;
         Matrix4x4 m_MainCharacterShadowMatrix;
 
         const string k_RenderMainCharacterShadowmapTag = "Render Main Character Shadowmap";
@@ -61,7 +62,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         bool GetVPMatrix(Light light)
         {
-            if (!ShadowUtils.GetVPMatrixWithTag(light, "Player", _Renderers, out m_ViewMatrix, out m_ProjMatrix))
+            if (!ShadowUtils.GetVPMatrixWithTag(light, "Player", _Renderers, out m_ViewMatrix, out m_ProjMatrix, out m_CullingSphere))
             {
                 return false;
             }
@@ -125,15 +126,27 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
-                foreach (var r in _Renderers)
+                //foreach (var r in _Renderers)
+                //{
+                //    _RendererMPB.SetFloat("_IsMainCharacter", 1);
+                //    r.SetPropertyBlock(_RendererMPB);
+                //    for (int i = 0, imax = r.sharedMaterials.Length; i < imax; i++)
+                //    {
+                //        cmd.DrawRenderer(r, r.sharedMaterials[i], i, r.sharedMaterials[i].FindPass("ShadowCaster"));
+                //    }
+                //}
+                ShadowSliceData slice = new ShadowSliceData()
                 {
-                    _RendererMPB.SetFloat("_IsMainCharacter", 1);
-                    r.SetPropertyBlock(_RendererMPB);
-                    for (int i = 0, imax = r.sharedMaterials.Length; i < imax; i++)
-                    {
-                        cmd.DrawRenderer(r, r.sharedMaterials[i], i, r.sharedMaterials[i].FindPass("ShadowCaster"));
-                    }
-                }
+                    offsetX = 0,
+                    offsetY = 0,
+                    resolution = shadowData.mainCharacterShadowmapWidth
+                };
+
+                DrawShadowsSettings settings = new DrawShadowsSettings(renderingData.cullResults, shadowLightIndex);
+                settings.splitData.cullingSphere = m_CullingSphere;
+
+                ShadowUtils.RenderShadowSlice(cmd, ref context, ref slice, ref settings, m_ProjMatrix, m_ViewMatrix);
+
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
@@ -174,6 +187,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             cmd.SetGlobalVector("_MainCharacterShadowOffset1", new Vector4(invHalfShadowAtlasWidth, -invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector("_MainCharacterShadowOffset2", new Vector4(-invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector("_MainCharacterShadowOffset3", new Vector4(invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
+            Vector4 cullingSphereWithSquaredRadius = m_CullingSphere;
+            cullingSphereWithSquaredRadius.w *= cullingSphereWithSquaredRadius.w;
+            cmd.SetGlobalVector("_MainCharacterCullingSphere", cullingSphereWithSquaredRadius);
 
         }
     }

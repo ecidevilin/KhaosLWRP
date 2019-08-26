@@ -222,10 +222,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             return textureScaleAndBias * worldToShadow;
         }
 
-        public static bool GetVPMatrixWithTag(Light light, string tag, List<Renderer> renderers, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix)
+        public static bool GetVPMatrixWithTag(Light light, string tag, List<Renderer> renderers, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix, out Vector4 cullingSphere)
         {
             viewMatrix = Matrix4x4.identity;
             projMatrix = Matrix4x4.identity;
+            cullingSphere = Vector4.zero;
             GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
             if (null == objs || 0 == objs.Length)
             {
@@ -265,6 +266,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             Vector3 center = bounds.center;
             float radius = bounds.extents.magnitude;
+            cullingSphere = center;
+            cullingSphere.w = radius;
             Vector3 intialLightPos = center;// - light.transform.forward.normalized * radius;
 
             projMatrix = Matrix4x4.Ortho(-radius, radius, -radius, radius, radius * 0.1f, radius * 2.3f);

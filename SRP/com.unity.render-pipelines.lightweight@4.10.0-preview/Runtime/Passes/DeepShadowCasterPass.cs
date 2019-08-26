@@ -21,6 +21,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private List<Renderer> _Renderers = new List<Renderer>();
         Matrix4x4 _ViewMatrix;
         Matrix4x4 _ProjMatrix;
+        Vector4 _CullingSphere;
         Matrix4x4 _DeepShadowMatrix;
 
         public DeepShadowCasterPass()
@@ -74,7 +75,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         bool GetVPMatrix(Light light)
         {
-            if (!ShadowUtils.GetVPMatrixWithTag(light, "Player", _Renderers, out _ViewMatrix, out _ProjMatrix))
+            if (!ShadowUtils.GetVPMatrixWithTag(light, "Player", _Renderers, out _ViewMatrix, out _ProjMatrix, out _CullingSphere))
             {
                 return false;
             }
