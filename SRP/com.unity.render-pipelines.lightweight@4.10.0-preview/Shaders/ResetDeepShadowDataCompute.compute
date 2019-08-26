@@ -1,7 +1,8 @@
 ﻿#pragma kernel KernelResetBuffer
+#pragma kernel KernelTestDeepShadowMap
 
-uint _Dimension;
-uint _Elements;
+uint _DeepShadowMapSize;
+uint _DeepShadowMapDepth;
 
 RWStructuredBuffer<uint> _CountBuffer;
 RWStructuredBuffer<float2> _DataBuffer;
@@ -9,9 +10,17 @@ RWStructuredBuffer<float2> _DataBuffer;
 [numthreads(8,8,1)]
 void KernelResetBuffer(uint3 id : SV_DispatchThreadID)
 {
-	_CountBuffer[id.y * _Dimension + id.x] = 0;
-	//for (int i = 0; i < _Elements; i++)
-	//{
-	//	_DataBuffer[_Elements * (id.y * _Dimension + id.x) + i] = 1;
-	//}
+	_CountBuffer[id.y * _DeepShadowMapSize + id.x] = 0;
+	for (int i = 0; i < _DeepShadowMapDepth; i++)
+	{
+		_DataBuffer[_DeepShadowMapDepth * (id.y * _DeepShadowMapSize + id.x) + i] = float2(0, 0);
+	}
+}
+
+RWTexture2D<float4> _TestRt;
+
+[numthreads(8, 8, 1)]
+void KernelTestDeepShadowMap(uint3 id : SV_DispatchThreadID)
+{
+	_TestRt[id.xy] = _CountBuffer[id.y * _DeepShadowMapSize + id.x];
 }

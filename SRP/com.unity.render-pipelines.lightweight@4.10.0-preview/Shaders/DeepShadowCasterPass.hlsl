@@ -22,7 +22,8 @@ struct Attributes
 
 struct Varyings
 {
-	float4 uv           : TEXCOORD0;
+	float2 uv           : TEXCOORD0;
+	float3 shadowCoord  : TEXCOORD1;
 	float4 positionCS   : SV_POSITION;
 };
 
@@ -56,7 +57,7 @@ Varyings DeepShadowCasterVertex(Attributes input)
 
 	output.uv.xy = TRANSFORM_TEX(input.texcoord, _MainTex);
 	output.positionCS = GetShadowPositionHClip(input);
-	output.uv.zw = output.positionCS.xy * 0.5 + 0.5;
+	output.shadowCoord = output.positionCS.xyz * 0.5 + 0.5;
 	return output;
 }
 
@@ -64,13 +65,13 @@ half4 DeepShadowCasterFragment(Varyings input) : SV_TARGET
 {
 	half alpha = Alpha(SampleAlbedoAlpha(input.uv.xy, TEXTURE2D_PARAM(_MainTex, sampler_MainTex)).a, _Color, _Cutoff);
 
-	uint2 lightUV = input.uv.zw * _DeepShadowMapSize;
+	float2 lightUV = input.shadowCoord.xy * _DeepShadowMapSize;
 	uint idx = lightUV.y * _DeepShadowMapSize + lightUV.x;
 	uint originalVal = 0;
 	InterlockedAdd(_CountBufferUAV[idx], 1, originalVal);
 	originalVal = min(_DeepShadowMapDepth - 1, originalVal);
 	uint offset = idx * _DeepShadowMapDepth;
-	_DataBufferUAV[offset + originalVal] = float2(input.positionCS.z, 1 - alpha);
-	return 0;
+	_DataBufferUAV[offset + originalVal] = float2(input.shadowCoord.z, 1 - alpha);
+	return input.shadowCoord.z;
 }
 #endif

@@ -120,7 +120,7 @@ Shader "Lightweight Render Pipeline/Lit"
             Name "ShadowCaster"
             Tags{"LightMode" = "ShadowCaster"}
 
-            ZWrite On
+            ZWrite [_ShadowCasterZWrite]
             ZTest LEqual
             Cull[_Cull]
 
@@ -128,11 +128,13 @@ Shader "Lightweight Render Pipeline/Lit"
             // Required to compile gles 2.0 with standard srp library
             #pragma prefer_hlslcc gles
             #pragma exclude_renderers d3d11_9x
-            #pragma target 2.0
+            #pragma target 4.5 //for deep shadow map
 
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature _ALPHATEST_ON
+
+			#pragma multi_compile _ _DEEP_SHADOW_CASTER
 
             //--------------------------------------
             // GPU Instancing
@@ -207,34 +209,6 @@ Shader "Lightweight Render Pipeline/Lit"
 			#pragma multi_compile_instancing
 			#include "LitInput.hlsl"
 			#include "DepthNormalsPass.hlsl"
-			ENDHLSL
-		}
-
-		Pass
-		{
-			Name "DeepShadowCaster"
-			Tags {"LightMode" = "DeepShadowCaster"}
-			ZWrite Off
-			//ColorMask 0
-			Cull[_Cull]
-
-			HLSLPROGRAM
-			#pragma target 4.5
-			#pragma exclude_renderers d3d11_9x gles
-
-			#pragma vertex DeepShadowCasterVertex
-			#pragma fragment DeepShadowCasterFragment
-
-			// -------------------------------------
-			// Material Keywords
-			#pragma shader_feature _ALPHATEST_ON
-			#pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-
-			//--------------------------------------
-			// GPU Instancing
-			#pragma multi_compile_instancing
-			#include "LitInput.hlsl"
-			#include "DeepShadowCasterPass.hlsl"
 			ENDHLSL
 		}
 

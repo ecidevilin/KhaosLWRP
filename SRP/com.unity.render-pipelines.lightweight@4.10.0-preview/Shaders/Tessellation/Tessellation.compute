@@ -1,0 +1,40 @@
+﻿//#pragma kernel CSTessellation
+//#pragma kernel CSTessFactors
+//
+//#define SUBMESH_MAX 4
+//
+//CBUFFER_START(CB1)
+//	float _SubmeshTriOffsets[SUBMESH_MAX];
+//	float _SubmeshTriCounts[SUBMESH_MAX];
+//	uint4 _TessellationFactor;
+//CBUFFER_END
+//StructuredBuffer<uint> _Triangles;
+//ByteAddressBuffer _Vertices;
+//RWStructuredBuffer<uint> _OutTriangles;
+//RWByteAddressBuffer _OutVertices;
+//RWStructuredBuffer<uint> _TessFactors;
+//
+//float3 LoadVertex(uint index, uint vertexOffset)
+//{
+//	return asfloat(vertexData.Load3(vertexOffset + index * 12));
+//}
+//
+//
+//
+//float4 ConstHull(uint3 indices)
+//{
+//
+//}
+//
+//[numthreads(8,8,1)]
+//void CSTessellation(uint3 id : SV_DispatchThreadID)
+//{
+//    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+//}
+//
+//
+//[numthreads(8, 8, 1)]
+//void CSTessFactors(uint3 id : SV_DispatchThreadID)
+//{
+//	Result[id.xy] = float4(id.x & id.y, (id.x & 15) / 15.0, (id.y & 15) / 15.0, 0.0);
+//}

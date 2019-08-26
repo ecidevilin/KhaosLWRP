@@ -65,6 +65,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             _Descriptor.colorFormat = _ShadowLutFormat;
             _Descriptor.depthBufferBits = 0;
 
+            temp = new RenderTexture(1024, 1024, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear)
+            {
+                enableRandomWrite = true,
+            };
+            temp.Create();
+
             return true;
         }
 
@@ -84,6 +90,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
             base.FrameCleanup(cmd);
         }
+
+        RenderTexture temp;
 
         /// <inheritdoc/>
         public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
@@ -110,6 +118,16 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             CommandBuffer cmd = CommandBufferPool.Get(k_RenderScreenSpaceDeepShadowMaps);
             using (new ProfilingSample(cmd, k_RenderScreenSpaceDeepShadowMaps))
             {
+                var _ResetCompute = renderer.GetCompute(ComputeHandle.ResetDeepShadowDataCompute);
+                int KernelTestDeepShadowMap = _ResetCompute.FindKernel("KernelTestDeepShadowMap");
+                cmd.SetRenderTarget(temp);
+                cmd.SetComputeBufferParam(_ResetCompute, KernelTestDeepShadowMap, "_CountBuffer", _CountBuffer);
+                cmd.SetComputeTextureParam(_ResetCompute, KernelTestDeepShadowMap, "_TestRt", temp);
+                cmd.DispatchCompute(_ResetCompute, KernelTestDeepShadowMap, 1024 / 8, 1024 / 8, 1);
+
+                context.ExecuteCommandBuffer(cmd);
+                cmd.Clear();
+
                 // Resolve
                 Material ssdsm = renderer.GetMaterial(MaterialHandle.ScreenSpaceDeepShadowMaps);
                 ssdsm.SetBuffer(Shader.PropertyToID("_CountBuffer"), _CountBuffer);

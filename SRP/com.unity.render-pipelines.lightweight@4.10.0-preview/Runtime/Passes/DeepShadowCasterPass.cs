@@ -122,8 +122,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 // Reset
                 cmd.SetComputeBufferParam(_ResetCompute, KernelResetBuffer, "_CountBuffer", _CountBuffer);
                 cmd.SetComputeBufferParam(_ResetCompute, KernelResetBuffer, "_DataBuffer", _DataBuffer);
+                cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapSize", _DeepShadowMapSize);
+                cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapDepth", _DeepShadowMapDepth);
                 cmd.DispatchCompute(_ResetCompute, KernelResetBuffer, _DeepShadowMapSize / 8, _DeepShadowMapSize / 8, 1);
 
+                //var temp = RenderTexture.GetTemporary(_DeepShadowMapSize, _DeepShadowMapSize, 16, RenderTextureFormat.ARGB32); //Without rt, the second row of the vp matrix is negated
+                
                 // Cast
                 SetRenderTarget(cmd, BuiltinRenderTextureType.None, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare, 
                     ClearFlag.Color, Color.black, TextureDimension.Tex2D);
@@ -141,19 +145,39 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
-                foreach (var r in _Renderers)
+                //foreach (var r in _Renderers)
+                //{
+                //    for (int i = 0, imax = r.sharedMaterials.Length; i < imax; i++)
+                //    {
+                //        cmd.DrawRenderer(r, r.sharedMaterials[i], i, r.sharedMaterials[i].FindPass("DeepShadowCaster"));
+                //    }
+                //}
+
+                ShadowSliceData slice = new ShadowSliceData()
                 {
-                    for (int i = 0, imax = r.sharedMaterials.Length; i < imax; i++)
-                    {
-                        cmd.DrawRenderer(r, r.sharedMaterials[i], i, r.sharedMaterials[i].FindPass("DeepShadowCaster"));
-                    }
-                }
+                    offsetX = 0,
+                    offsetY = 0,
+                    resolution = _DeepShadowMapSize,
+                };
+
+                cmd.SetGlobalMatrix("_DeepShadowMapsWorldToShadow", _DeepShadowMatrix);
+                DrawShadowsSettings settings = new DrawShadowsSettings(renderingData.cullResults, shadowLightIndex);
+                settings.splitData.cullingSphere = _CullingSphere;
+
+                cmd.EnableShaderKeyword("_DEEP_SHADOW_CASTER");
+                cmd.SetGlobalInt("_ShadowCasterZWrite", 0);
+                ShadowUtils.RenderShadowSlice(cmd, ref context, ref slice, ref settings, _ProjMatrix, _ViewMatrix);
+                cmd.DisableShaderKeyword("_DEEP_SHADOW_CASTER");
+                cmd.SetGlobalInt("_ShadowCasterZWrite", 1);
+
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
                 // For Resolve
                 SetupDeepShadowMapResolverConstants(cmd, ref shadowData, shadowLight);
                 cmd.ClearRandomWriteTargets();
+
+                //RenderTexture.ReleaseTemporary(temp);
             }
 
             context.ExecuteCommandBuffer(cmd);
@@ -186,6 +210,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             //cmd.SetGlobalVector("_MainCharacterShadowOffset1", new Vector4(invHalfShadowAtlasWidth, -invHalfShadowAtlasHeight, 0.0f, 0.0f));
             //cmd.SetGlobalVector("_MainCharacterShadowOffset2", new Vector4(-invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
             //cmd.SetGlobalVector("_MainCharacterShadowOffset3", new Vector4(invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
+            Vector4 cullingSphereWithSquaredRadius = _CullingSphere;
+            cullingSphereWithSquaredRadius.w *= cullingSphereWithSquaredRadius.w;
+            cmd.SetGlobalVector("_DeepShadowMapsCullingSphere", cullingSphereWithSquaredRadius);
 
         }
     }

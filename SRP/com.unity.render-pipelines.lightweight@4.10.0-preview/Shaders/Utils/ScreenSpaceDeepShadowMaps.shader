@@ -76,9 +76,19 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 		StructuredBuffer<uint> _CountBuffer;
 		StructuredBuffer<float2> _DataBuffer;
 
+		CBUFFER_START(_DeepShadowMapsBuffer)
 		float4x4 _DeepShadowMapsWorldToShadow;
 		half _DeepShadowStrength;
+		float4 _DeepShadowMapsCullingSphere;
+		CBUFFER_END
 
+		float4 TransformWorldToDeepShadowCoord(float3 positionWS)
+		{
+			float3 fromCenter = positionWS - _DeepShadowMapsCullingSphere.xyz;
+			float distances2 = dot(fromCenter, fromCenter);
+			half weight = distances2 < _DeepShadowMapsCullingSphere.z;
+			return mul(_DeepShadowMapsWorldToShadow, float4(positionWS, 1)) * weight;
+		}
 
         half4 Fragment(Varyings input) : SV_Target
         {
@@ -94,21 +104,23 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 #if UNITY_REVERSED_Z
             deviceDepth = 1 - deviceDepth;
 #endif
-			if (deviceDepth > 0.999)
-			{
-				return 1;
-			}
             deviceDepth = 2 * deviceDepth - 1; //NOTE: Currently must massage depth before computing CS position.
 			
             float3 vpos = ComputeViewSpacePosition(input.uv.zw, deviceDepth, unity_CameraInvProjection);
             float3 wpos = mul(unity_CameraToWorld, float4(vpos, 1)).xyz;
 
             //Fetch shadow coordinates for cascade.
-            float4 coords = mul(_DeepShadowMapsWorldToShadow, float4(wpos, 1));
+			float4 coords = TransformWorldToDeepShadowCoord(wpos);//mul(_DeepShadowMapsWorldToShadow, float4(wpos, 1));
+			//if (coords.w < 0.0001)
+			//{
+			//	return 1;
+			//}
+
 			uint2 shadowUV = coords.xy * _DeepShadowMapSize;
 			uint lidx = shadowUV.y * _DeepShadowMapSize + shadowUV.x;
 			uint num = _CountBuffer[lidx];
 			num = min(num, _DeepShadowMapDepth);
+
 			if (num == 0)
 			{
 				return 1;
