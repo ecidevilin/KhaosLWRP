@@ -21,6 +21,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         Vector4 _CullingSphere;
         Matrix4x4 _DeepShadowMatrix;
 
+        RenderTexture _Temp;
+
 
         static private List<string> _Tags = new List<string>()
         {
@@ -66,16 +68,25 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (cmd == null)
                 throw new ArgumentNullException("cmd");
+
+            if (_Temp)
+            {
+                RenderTexture.ReleaseTemporary(_Temp);
+                _Temp = null;
+            }
+
             base.FrameCleanup(cmd);
         }
 
         bool GetVPMatrix(Light light)
         {
-            if (!ShadowUtils.GetVPMatrixWithTags(light, _Tags, _Renderers, out _ViewMatrix, out _ProjMatrix, out _CullingSphere))
-            {
-                return false;
-            }
-
+            //if (!ShadowUtils.GetVPMatrixWithTags(light, _Tags, _Renderers, out _ViewMatrix, out _ProjMatrix, out _CullingSphere))
+            //{
+            //    return false;
+            //}
+            // FIXME: for test
+            Bounds bounds = new Bounds(new Vector3(1, 1.65f, 1), new Vector3(0.25f, 0.25f, 0.4f));
+            ShadowUtils.GetVPMatrixWithWorldBounds(light, bounds, out _ViewMatrix, out _ProjMatrix, out _CullingSphere);
             _DeepShadowMatrix = ShadowUtils.GetShadowTransform(_ProjMatrix, _ViewMatrix);
 
             return true;
@@ -123,10 +134,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapDepth", deepShadowMapsDepth);
                 cmd.DispatchCompute(_ResetCompute, KernelResetBuffer, deepShadowMapsSize / 8, deepShadowMapsSize / 8, 1);
 
-                var temp = RenderTexture.GetTemporary(deepShadowMapsSize, deepShadowMapsSize, 0, RenderTextureFormat.R8); //Without rt, the second row of the vp matrix is negated
+                _Temp = RenderTexture.GetTemporary(deepShadowMapsSize, deepShadowMapsSize, 0, RenderTextureFormat.R8); //Without rt, the second row of the vp matrix is negated
                 
                 // Cast
-                SetRenderTarget(cmd, temp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare, 
+                SetRenderTarget(cmd, _Temp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare, 
                     ClearFlag.Color, Color.black, TextureDimension.Tex2D);
                 cmd.SetViewport(new Rect(Vector2.zero, Vector2.one * deepShadowMapsSize));
 
@@ -173,8 +184,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 // For Resolve
                 SetupDeepShadowMapResolverConstants(cmd, ref shadowData, shadowLight);
                 cmd.ClearRandomWriteTargets();
-
-                RenderTexture.ReleaseTemporary(temp);
             }
 
             context.ExecuteCommandBuffer(cmd);

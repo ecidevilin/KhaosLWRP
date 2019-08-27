@@ -69,21 +69,21 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
     public enum DeepShadowDepth
     {
-        _8,
-        _16,
-        _32,
-        _64,
-        _128,
+        _8 = 8,
+        _16 = 16,
+        _32 = 32,
+        _64 = 64,
+        _128 = 128,
     }
 
     public enum GaussianBlurOffset
     {
-        _0,
-        _1,
-        _2,
-        _4,
-        _8,
-        _16,
+        _0 = 0,
+        _1 = 1,
+        _2 = 2,
+        _4 = 4,
+        _8 = 8,
+        _16 = 16,
     }
 
     public class LightweightRenderPipelineAsset : RenderPipelineAsset, ISerializationCallbackReceiver

@@ -224,6 +224,24 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         private static List<string> _tags = new List<string>();
 
+        public static void GetVPMatrixWithWorldBounds(Light light, Bounds bounds, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix, out Vector4 cullingSphere)
+        {
+
+            Vector3 center = bounds.center;
+            float radius = bounds.extents.magnitude;
+            cullingSphere = center;
+            cullingSphere.w = radius;
+            Vector3 intialLightPos = center;// - light.transform.forward.normalized * radius;
+
+            projMatrix = Matrix4x4.Ortho(-radius, radius, -radius, radius, radius * 0.1f, radius * 2.3f);
+            projMatrix = GL.GetGPUProjectionMatrix(projMatrix, false);
+            viewMatrix = light.transform.worldToLocalMatrix;
+            Vector4 viewTsl = -viewMatrix.MultiplyVector(intialLightPos);
+            viewTsl.z -= radius * 1.2f;
+            viewTsl.w = 1;
+            viewMatrix.SetColumn(3, viewTsl);
+        }
+
         public static bool GetVPMatrixWithTag(Light light, string tag, List<Renderer> renderers, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix, out Vector4 cullingSphere)
         {
             _tags.Clear();
@@ -272,24 +290,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 return false;
             }
 
-            Vector3 axisX = light.transform.right.normalized;
-            Vector3 axisY = light.transform.up.normalized;
-            Vector3 axisZ = light.transform.worldToLocalMatrix.GetColumn(2).normalized;
-
-            Vector3 center = bounds.center;
-            float radius = bounds.extents.magnitude;
-            cullingSphere = center;
-            cullingSphere.w = radius;
-            Vector3 intialLightPos = center;// - light.transform.forward.normalized * radius;
-
-            projMatrix = Matrix4x4.Ortho(-radius, radius, -radius, radius, radius * 0.1f, radius * 2.3f);
-            projMatrix = GL.GetGPUProjectionMatrix(projMatrix, false);
-            viewMatrix = light.transform.worldToLocalMatrix;
-            //viewMatrix.SetColumn(2, -viewMatrix.GetColumn(2));
-            Vector4 viewTsl = -viewMatrix.MultiplyVector(intialLightPos);
-            viewTsl.z -= radius * 1.2f;
-            viewTsl.w = 1;
-            viewMatrix.SetColumn(3, viewTsl);
+            GetVPMatrixWithWorldBounds(light, bounds, out viewMatrix, out projMatrix, out cullingSphere);
 
             return true;
         }

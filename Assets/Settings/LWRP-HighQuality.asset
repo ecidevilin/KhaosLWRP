@@ -36,6 +36,10 @@ MonoBehaviour:
   m_SoftShadowsSupported: 1
   m_SupportsMainCharacterShadows: 1
   m_MainCharacterShadowmapResolution: 512
+  _SupportsDeepShadowMaps: 1
+  _DeepShadowMapsSize: 512
+  _DeepShadowMapsDepth: 32
+  _DeepShadowMapsBlurOffset: 1
   m_SupportsDynamicBatching: 1
   m_MixedLightingSupported: 1
   m_ShadowType: 2

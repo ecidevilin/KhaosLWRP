@@ -23,5 +23,5 @@ RWTexture2D<float4> _TestRt;
 void KernelTestDeepShadowMap(uint3 id : SV_DispatchThreadID)
 {
 	uint count = _CountBuffer[(id.y * _DeepShadowMapSize + id.x)];
-	_TestRt[id.xy] = float4(_DataBuffer[(id.y * _DeepShadowMapSize + id.x)*_DeepShadowMapDepth].xy, count > 2, count > 3);
+	_TestRt[id.xy] = float4(_DataBuffer[(id.y * _DeepShadowMapSize + id.x)*_DeepShadowMapDepth  + 1].xy, count > 2, count > 3);
 }
