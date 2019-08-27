@@ -76,7 +76,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (cmd == null)
                 throw new ArgumentNullException("cmd");
-            cmd.SetGlobalFloat("_IsMainCharacter", 0);
 
             if (m_MainCharacterShadowmapTexture)
             {
@@ -128,8 +127,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
                 //foreach (var r in _Renderers)
                 //{
-                //    _RendererMPB.SetFloat("_IsMainCharacter", 1);
-                //    r.SetPropertyBlock(_RendererMPB);
                 //    for (int i = 0, imax = r.sharedMaterials.Length; i < imax; i++)
                 //    {
                 //        cmd.DrawRenderer(r, r.sharedMaterials[i], i, r.sharedMaterials[i].FindPass("ShadowCaster"));

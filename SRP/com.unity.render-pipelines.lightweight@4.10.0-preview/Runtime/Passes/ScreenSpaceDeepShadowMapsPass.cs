@@ -122,6 +122,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 int KernelTestDeepShadowMap = _ResetCompute.FindKernel("KernelTestDeepShadowMap");
                 cmd.SetRenderTarget(temp);
                 cmd.SetComputeBufferParam(_ResetCompute, KernelTestDeepShadowMap, "_CountBuffer", _CountBuffer);
+                cmd.SetComputeBufferParam(_ResetCompute, KernelTestDeepShadowMap, "_DataBuffer", _DataBuffer);
                 cmd.SetComputeTextureParam(_ResetCompute, KernelTestDeepShadowMap, "_TestRt", temp);
                 cmd.DispatchCompute(_ResetCompute, KernelTestDeepShadowMap, 1024 / 8, 1024 / 8, 1);
 

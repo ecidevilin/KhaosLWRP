@@ -8,6 +8,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
     {
         const string k_RenderDeepShadowCaster = "Render Deep Shadow Caster";
 
+        // Settings
         const int _DeepShadowMapSize = 1024;
         const int _DeepShadowMapDepth = 32;
 
@@ -126,10 +127,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapDepth", _DeepShadowMapDepth);
                 cmd.DispatchCompute(_ResetCompute, KernelResetBuffer, _DeepShadowMapSize / 8, _DeepShadowMapSize / 8, 1);
 
-                //var temp = RenderTexture.GetTemporary(_DeepShadowMapSize, _DeepShadowMapSize, 16, RenderTextureFormat.ARGB32); //Without rt, the second row of the vp matrix is negated
+                var temp = RenderTexture.GetTemporary(_DeepShadowMapSize, _DeepShadowMapSize, 0, RenderTextureFormat.R8); //Without rt, the second row of the vp matrix is negated
                 
                 // Cast
-                SetRenderTarget(cmd, BuiltinRenderTextureType.None, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare, 
+                SetRenderTarget(cmd, temp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare, 
                     ClearFlag.Color, Color.black, TextureDimension.Tex2D);
                 cmd.SetViewport(new Rect(Vector2.zero, Vector2.one * _DeepShadowMapSize));
 
@@ -177,7 +178,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 SetupDeepShadowMapResolverConstants(cmd, ref shadowData, shadowLight);
                 cmd.ClearRandomWriteTargets();
 
-                //RenderTexture.ReleaseTemporary(temp);
+                RenderTexture.ReleaseTemporary(temp);
             }
 
             context.ExecuteCommandBuffer(cmd);

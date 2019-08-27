@@ -70,9 +70,6 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
             return output;
         }
 
-		uint _DeepShadowMapSize;
-		uint _DeepShadowMapDepth;
-
 		StructuredBuffer<uint> _CountBuffer;
 		StructuredBuffer<float2> _DataBuffer;
 
@@ -80,6 +77,8 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 		float4x4 _DeepShadowMapsWorldToShadow;
 		half _DeepShadowStrength;
 		float4 _DeepShadowMapsCullingSphere;
+		uint _DeepShadowMapSize;
+		uint _DeepShadowMapDepth;
 		CBUFFER_END
 
 		float4 TransformWorldToDeepShadowCoord(float3 positionWS)

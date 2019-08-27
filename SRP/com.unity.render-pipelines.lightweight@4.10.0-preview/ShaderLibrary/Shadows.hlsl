@@ -65,7 +65,6 @@ half4       _MainCharacterShadowOffset2;
 half4       _MainCharacterShadowOffset3;
 float4		_MainCharacterCullingSphere;
 CBUFFER_END
-half _IsMainCharacter;
 
 #if UNITY_REVERSED_Z
 #define BEYOND_SHADOW_FAR(shadowCoord) shadowCoord.z <= UNITY_RAW_FAR_CLIP_VALUE
@@ -236,7 +235,6 @@ half MainLightRealtimeShadow(float4 shadowCoord, float4 shadowCoord2)
 	half shadowStrength = GetMainLightShadowStrength();
 	half atten = SampleShadowmap(shadowCoord, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
 #ifdef _MAIN_CHARACTER_SHADOWS
-	//if (_IsMainCharacter > 0.5)
 	{
 		half mcAtten = SampleShadowmap(shadowCoord2, TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false);
 		atten = lerp(atten, mcAtten, shadowCoord2.w);
