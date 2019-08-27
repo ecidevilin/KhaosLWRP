@@ -150,18 +150,28 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 result = _DeepShadowLut;
 
                 // Blur
-                if (shadowData.deepShadowMapsBlurOffset > 0)
+                int blurOffset = shadowData.deepShadowMapsBlurOffset;
+                
+                if (blurOffset > 0)
                 {
                     Material pom = renderer.GetMaterial(MaterialHandle.GaussianBlur);
-                    pom.SetFloat("_SampleOffset", shadowData.deepShadowMapsBlurOffset);
                     _DeepShadowTmp = RenderTexture.GetTemporary(_Descriptor);
                     _DeepShadowTmp.filterMode = FilterMode.Bilinear;
                     _DeepShadowTmp.wrapMode = TextureWrapMode.Clamp;
                     _DeepShadowTmp.name = "_DeepShadowTmp";
-                    SetRenderTarget(cmd, _DeepShadowTmp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                        ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
-                    cmd.Blit(_DeepShadowLut, _DeepShadowTmp, pom);
-                    result = _DeepShadowTmp;
+                    RenderTexture src = _DeepShadowLut;
+                    RenderTexture dst = _DeepShadowTmp;
+                    while (blurOffset > 0)
+                    {
+                        pom.SetFloat("_SampleOffset", blurOffset);
+                        SetRenderTarget(cmd, dst, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                            ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
+                        cmd.Blit(src, dst, pom);
+                        result = dst;
+                        dst = src;
+                        src = result;
+                        blurOffset >>= 1;
+                    }
                 }
                 //TODO : for stereo
 
