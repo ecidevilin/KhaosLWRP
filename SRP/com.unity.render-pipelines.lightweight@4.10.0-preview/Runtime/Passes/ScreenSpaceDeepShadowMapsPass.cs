@@ -30,6 +30,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             _ShadowLutFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.R8)
                 ? RenderTextureFormat.R8
                 : RenderTextureFormat.ARGB32;
+            _ShadowLutFormat = RenderTextureFormat.ARGB32;
         }
 
         public bool Setup(ScriptableRenderer renderer, RenderTextureDescriptor baseDescriptor, RenderTargetHandle destination, ref RenderingData renderingData)
@@ -65,11 +66,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             _Descriptor.colorFormat = _ShadowLutFormat;
             _Descriptor.depthBufferBits = 0;
 
-            temp = new RenderTexture(1024, 1024, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear)
+            if (null == _TestRt)
             {
-                enableRandomWrite = true,
-            };
-            temp.Create();
+                _TestRt = new RenderTexture(1024, 1024, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear)
+                {
+                    enableRandomWrite = true,
+                };
+                _TestRt.Create();
+            }
 
             return true;
         }
@@ -91,7 +95,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             base.FrameCleanup(cmd);
         }
 
-        RenderTexture temp;
+        static RenderTexture _TestRt;
 
         /// <inheritdoc/>
         public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
@@ -119,10 +123,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             {
                 var _ResetCompute = renderer.GetCompute(ComputeHandle.ResetDeepShadowDataCompute);
                 int KernelTestDeepShadowMap = _ResetCompute.FindKernel("KernelTestDeepShadowMap");
-                cmd.SetRenderTarget(temp);
+                cmd.SetRenderTarget(_TestRt);
                 cmd.SetComputeBufferParam(_ResetCompute, KernelTestDeepShadowMap, "_CountBuffer", _CountBuffer);
                 cmd.SetComputeBufferParam(_ResetCompute, KernelTestDeepShadowMap, "_DataBuffer", _DataBuffer);
-                cmd.SetComputeTextureParam(_ResetCompute, KernelTestDeepShadowMap, "_TestRt", temp);
+                cmd.SetComputeTextureParam(_ResetCompute, KernelTestDeepShadowMap, "_TestRt", _TestRt);
                 cmd.DispatchCompute(_ResetCompute, KernelTestDeepShadowMap, 1024 / 8, 1024 / 8, 1);
 
                 context.ExecuteCommandBuffer(cmd);
@@ -157,30 +161,19 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     SetRenderTarget(cmd, _DeepShadowTmp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                         ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
                     cmd.Blit(_DeepShadowLut, _DeepShadowTmp, pom);
+                    result = _DeepShadowTmp;
                 }
                 //TODO : for stereo
-
-                result = _DeepShadowTmp;
 
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
-                SetupScreenSpaceDeepShadowMapsConstants(cmd, ref shadowData, shadowLight, result);
+                cmd.SetGlobalTexture(_Destination.id, result);
             }
             //SetKeyword
+            CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.DeepShadowMaps, true);
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
-        }
-        void SetupScreenSpaceDeepShadowMapsConstants(CommandBuffer cmd, ref ShadowData shadowData, VisibleLight shadowLight, RenderTexture rt)
-        {
-            Light light = shadowLight.light;
-
-            float invShadowAtlasWidth = 1.0f / shadowData.mainCharacterShadowmapWidth;
-            float invShadowAtlasHeight = 1.0f / shadowData.mainCharacterShadowmapHeight;
-            float invHalfShadowAtlasWidth = 0.5f * invShadowAtlasWidth;
-            float invHalfShadowAtlasHeight = 0.5f * invShadowAtlasHeight;
-            cmd.SetGlobalTexture(_Destination.id, rt);
-
         }
     }
 }

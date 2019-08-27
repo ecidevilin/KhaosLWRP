@@ -91,7 +91,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             MainCharacterShadowmap.Init("_MainCharacterShadowmapTexture");
             AdditionalLightsShadowmap.Init("_AdditionalLightsShadowmapTexture");
             ScreenSpaceShadowmap.Init("_ScreenSpaceShadowmapTexture");
-            ScreenSpaceDeepShadowLut.Init("_ScreenSpaceDeepShadowLut");
+            ScreenSpaceDeepShadowLut.Init("_DeepShadowLut");
 
             m_Initialized = true;
         }

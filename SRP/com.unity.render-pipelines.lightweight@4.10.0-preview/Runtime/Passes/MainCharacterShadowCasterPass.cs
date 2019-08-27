@@ -23,6 +23,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private List<Renderer> _Renderers = new List<Renderer>();
         MaterialPropertyBlock _RendererMPB = new MaterialPropertyBlock();
 
+        static private List<string> _Tags = new List<string>()
+        {
+            "Player",
+        };
+
         public MainCharacterShadowCasterPass()
         {
             RegisterShaderPassName("ShadowCaster");
@@ -62,7 +67,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         bool GetVPMatrix(Light light)
         {
-            if (!ShadowUtils.GetVPMatrixWithTag(light, "Player", _Renderers, out m_ViewMatrix, out m_ProjMatrix, out m_CullingSphere))
+            if (!ShadowUtils.GetVPMatrixWithTags(light, _Tags, _Renderers, out m_ViewMatrix, out m_ProjMatrix, out m_CullingSphere))
             {
                 return false;
             }

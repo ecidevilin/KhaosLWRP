@@ -73,20 +73,9 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 		StructuredBuffer<uint> _CountBuffer;
 		StructuredBuffer<float2> _DataBuffer;
 
-		CBUFFER_START(_DeepShadowMapsBuffer)
-		float4x4 _DeepShadowMapsWorldToShadow;
-		half _DeepShadowStrength;
-		float4 _DeepShadowMapsCullingSphere;
-		uint _DeepShadowMapSize;
-		uint _DeepShadowMapDepth;
-		CBUFFER_END
-
 		float4 TransformWorldToDeepShadowCoord(float3 positionWS)
 		{
-			float3 fromCenter = positionWS - _DeepShadowMapsCullingSphere.xyz;
-			float distances2 = dot(fromCenter, fromCenter);
-			half weight = distances2 < _DeepShadowMapsCullingSphere.z;
-			return mul(_DeepShadowMapsWorldToShadow, float4(positionWS, 1)) * weight;
+			return mul(_DeepShadowMapsWorldToShadow, float4(positionWS, 1)) * InDeepShadowMaps(positionWS);
 		}
 
         half4 Fragment(Varyings input) : SV_Target
@@ -110,10 +99,10 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 
             //Fetch shadow coordinates for cascade.
 			float4 coords = TransformWorldToDeepShadowCoord(wpos);//mul(_DeepShadowMapsWorldToShadow, float4(wpos, 1));
-			//if (coords.w < 0.0001)
-			//{
-			//	return 1;
-			//}
+			if (coords.w < 0.0001)
+			{
+				return 1;
+			}
 
 			uint2 shadowUV = coords.xy * _DeepShadowMapSize;
 			uint lidx = shadowUV.y * _DeepShadowMapSize + shadowUV.x;
@@ -143,7 +132,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 				{
 					shading *= data.y;
 				}
-				if (shading < 0.001)
+				if (shading < 0.0001)
 				{
 					break;
 				}

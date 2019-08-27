@@ -222,37 +222,49 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             return textureScaleAndBias * worldToShadow;
         }
 
+        private static List<string> _tags = new List<string>();
+
         public static bool GetVPMatrixWithTag(Light light, string tag, List<Renderer> renderers, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix, out Vector4 cullingSphere)
+        {
+            _tags.Clear();
+            _tags.Add(tag);
+            return GetVPMatrixWithTags(light, _tags, renderers, out viewMatrix, out projMatrix, out cullingSphere);
+        }
+
+        public static bool GetVPMatrixWithTags(Light light, List<string> tags, List<Renderer> renderers, out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix, out Vector4 cullingSphere)
         {
             viewMatrix = Matrix4x4.identity;
             projMatrix = Matrix4x4.identity;
             cullingSphere = Vector4.zero;
-            GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
-            if (null == objs || 0 == objs.Length)
-            {
-                return false;
-            }
             renderers.Clear();
             Bounds bounds = new Bounds();
-            foreach (var p in objs)
+            foreach (var tag in tags)
             {
-                Renderer r = p.GetComponent<Renderer>();
-                if (null != r && r.enabled && r.shadowCastingMode != ShadowCastingMode.Off)
+                GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
+                if (null == objs || 0 == objs.Length)
                 {
-                    if (r is SkinnedMeshRenderer)
+                    continue;
+                }
+                foreach (var p in objs)
+                {
+                    Renderer r = p.GetComponent<Renderer>();
+                    if (null != r && r.enabled && r.shadowCastingMode != ShadowCastingMode.Off)
                     {
-                        (r as SkinnedMeshRenderer).sharedMesh.RecalculateBounds();
+                        if (r is SkinnedMeshRenderer)
+                        {
+                            (r as SkinnedMeshRenderer).sharedMesh.RecalculateBounds();
+                        }
+                        Bounds rb = r.bounds;
+                        if (0 != renderers.Count)
+                        {
+                            bounds.Encapsulate(rb);
+                        }
+                        else
+                        {
+                            bounds = rb;
+                        }
+                        renderers.Add(r);
                     }
-                    Bounds rb = r.bounds;
-                    if (0 != renderers.Count)
-                    {
-                        bounds.Encapsulate(rb);
-                    }
-                    else
-                    {
-                        bounds = rb;
-                    }
-                    renderers.Add(r);
                 }
             }
             if (0 == renderers.Count)

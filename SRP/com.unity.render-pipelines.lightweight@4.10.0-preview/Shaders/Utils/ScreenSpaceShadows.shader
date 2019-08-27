@@ -104,6 +104,11 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
 			half mcAtten = SampleShadowmap(mcCoords, TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false);
 			atten = lerp(atten, mcAtten, mcCoords.w);
 #endif
+#ifdef _DEEP_SHADOW_MAPS
+			half weight = InDeepShadowMaps(wpos);
+			half dsmAtten = SAMPLE_TEXTURE2D(_DeepShadowLut, sampler_DeepShadowLut, input.uv.xy).r;
+			atten = lerp(atten, dsmAtten, weight);
+#endif
 			return atten;
         }
 
@@ -120,6 +125,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceShadows"
             #pragma multi_compile _ _SHADOWS_SOFT
 			#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
 			#pragma multi_compile _ _MAIN_CHARACTER_SHADOWS
+			#pragma multi_compile _ _DEEP_SHADOW_MAPS
 
             #pragma vertex   Vertex
             #pragma fragment Fragment

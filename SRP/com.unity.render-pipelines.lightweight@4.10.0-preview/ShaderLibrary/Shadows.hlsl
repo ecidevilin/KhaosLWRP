@@ -27,6 +27,9 @@ SAMPLER_CMP(sampler_MainCharacterShadowmapTexture);
 TEXTURE2D_SHADOW(_AdditionalLightsShadowmapTexture);
 SAMPLER_CMP(sampler_AdditionalLightsShadowmapTexture);
 
+TEXTURE2D(_DeepShadowLut);
+SAMPLER(sampler_DeepShadowLut);
+
 CBUFFER_START(_MainLightShadowBuffer)
 // Last cascade is initialized with a no-op matrix. It always transforms
 // shadow coord to half3(0, 0, NEAR_PLANE). We use this trick to avoid
@@ -64,6 +67,14 @@ half4       _MainCharacterShadowOffset1;
 half4       _MainCharacterShadowOffset2;
 half4       _MainCharacterShadowOffset3;
 float4		_MainCharacterCullingSphere;
+CBUFFER_END
+
+CBUFFER_START(_DeepShadowMapsBuffer)
+float4x4 _DeepShadowMapsWorldToShadow;
+half _DeepShadowStrength;
+float4 _DeepShadowMapsCullingSphere;
+uint _DeepShadowMapSize;
+uint _DeepShadowMapDepth;
 CBUFFER_END
 
 #if UNITY_REVERSED_Z
@@ -279,5 +290,13 @@ float4 GetShadowCoordMC(VertexPositionInputs vertexInput)
 	return TransformWorldToMCShadowCoord(vertexInput.positionWS);
 }
 #endif
+
+half InDeepShadowMaps(float3 positionWS)
+{
+	float3 fromCenter = positionWS - _DeepShadowMapsCullingSphere.xyz;
+	float distances2 = dot(fromCenter, fromCenter);
+	half weight = distances2 < _DeepShadowMapsCullingSphere.z;
+	return weight;
+}
 
 #endif

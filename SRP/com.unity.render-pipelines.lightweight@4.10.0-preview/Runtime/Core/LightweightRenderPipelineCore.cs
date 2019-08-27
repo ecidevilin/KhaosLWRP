@@ -85,6 +85,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public static readonly string AdditionalLightShadows = "_ADDITIONAL_LIGHT_SHADOWS";
         public static readonly string SoftShadows = "_SHADOWS_SOFT";
         public static readonly string MainCharacterShadows = "_MAIN_CHARACTER_SHADOWS";
+        public static readonly string DeepShadowMaps = "_DEEP_SHADOW_MAPS";
         public static readonly string MixedLightingSubtractive = "_MIXED_LIGHTING_SUBTRACTIVE";
 
         public static readonly string DepthNoMsaa = "_DEPTH_NO_MSAA";
