@@ -136,9 +136,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             
             ComputeBuffer DeepShadowMapsCountBuffer = null;
             ComputeBuffer DeepShadowMapsDataBuffer = null;
-            //FIXME: Lazy new
-            DeepShadowMapsCountBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize, sizeof(uint));
-            DeepShadowMapsDataBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsDepth, sizeof(float) * 2);
+            if (pipelineAsset.supportsDeepShadowMaps)
+            {
+                DeepShadowMapsCountBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize, sizeof(uint));
+                DeepShadowMapsDataBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsDepth, sizeof(float) * 2);
+            }
             _Buffers = new[]
             {
                 DeepShadowMapsCountBuffer,
@@ -161,7 +163,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             for (int i = 0; i < _Buffers.Length; ++i)
             {
-                _Buffers[i].Dispose();
+                if (null != _Buffers[i])
+                {
+                    _Buffers[i].Dispose();
+                }
             }
         }
 
