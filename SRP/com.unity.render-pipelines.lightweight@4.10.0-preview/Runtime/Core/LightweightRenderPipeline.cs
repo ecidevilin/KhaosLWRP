@@ -77,6 +77,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public bool supportsSoftShadows { get; private set; }
             public bool supportsMainCharacterShadows { get; private set; }
             public int mainCharacterShadowmapResolution { get; private set; }
+            public bool supportsDeepShadowMaps { get; private set; }
+            public int deepShadowMapsSize { get; private set; }
+            public int deepShadowMapsDepth { get; private set; }
+            public int deepShadowMapsBlurOffset { get; private set; }
             public bool supportsDynamicBatching { get; private set; }
             public bool mixedLightingSupported { get; private set; }
 
@@ -115,6 +119,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cache.supportsSoftShadows = asset.supportsSoftShadows;
                 cache.supportsMainCharacterShadows = asset.supportsMainCharacterShadows;
                 cache.mainCharacterShadowmapResolution = asset.mainCharacterShadowmapResolution;
+                cache.supportsDeepShadowMaps = asset.supportsDeepShadowMaps;
+                cache.deepShadowMapsSize = asset.deepShadowMapsSize;
+                cache.deepShadowMapsDepth = asset.deepShadowMapsDepth;
+                cache.deepShadowMapsBlurOffset = asset.deepShadowMapsBlurOffset;
 
                 // Advanced settings
                 cache.supportsDynamicBatching = asset.supportsDynamicBatching;
@@ -391,6 +399,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             shadowData.mainLightShadowmapHeight = settings.mainLightShadowmapResolution;
             shadowData.mainCharacterShadowmapWidth = settings.mainCharacterShadowmapResolution;
             shadowData.mainCharacterShadowmapHeight = settings.mainCharacterShadowmapResolution;
+            shadowData.deepShadowMapsSize = settings.deepShadowMapsSize;
+            shadowData.deepShadowMapsDepth = settings.deepShadowMapsDepth;
+            shadowData.deepShadowMapsBlurOffset = settings.deepShadowMapsBlurOffset;
 
             switch (shadowData.mainLightShadowCascadesCount)
             {
@@ -413,6 +424,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             shadowData.shadowmapDepthBufferBits = 16;
 
             shadowData.supportsMainCharacterShadows = settings.supportsMainCharacterShadows && mainLightCastShadows;
+
+            shadowData.supportsDeepShadowMaps = settings.supportsDeepShadowMaps && mainLightCastShadows;
         }
 
         static void InitializeLightData(PipelineSettings settings, List<VisibleLight> visibleLights, int mainLightIndex, int maxAdditionalLights,

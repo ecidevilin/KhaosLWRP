@@ -70,6 +70,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public bool supportsMainCharacterShadows;
         public int mainCharacterShadowmapWidth;
         public int mainCharacterShadowmapHeight;
+        public bool supportsDeepShadowMaps;
+        public int deepShadowMapsSize;
+        public int deepShadowMapsDepth;
+        public int deepShadowMapsBlurOffset;
     }
 
     public static class ShaderKeywordStrings

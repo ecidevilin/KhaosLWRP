@@ -147,11 +147,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 }
             }
 
-            bool renderDeepShadowMap = true;
-            renderDeepShadowMap &= _DeepShadowCasterPass.Setup(renderer, ref renderingData);
+            bool renderDeepShadowMap = renderingData.shadowData.supportsDeepShadowMaps;
             if (renderDeepShadowMap)
             {
-                renderer.EnqueuePass(_DeepShadowCasterPass);
+                renderDeepShadowMap &= _DeepShadowCasterPass.Setup(renderer, ref renderingData);
+                if (renderDeepShadowMap)
+                {
+                    renderer.EnqueuePass(_DeepShadowCasterPass);
+                }
             }
 
             if (renderingData.shadowData.supportsAdditionalLightShadows)

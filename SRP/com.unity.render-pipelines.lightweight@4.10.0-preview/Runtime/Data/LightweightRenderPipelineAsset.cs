@@ -67,6 +67,25 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         AllShaders,
     }
 
+    public enum DeepShadowDepth
+    {
+        _8,
+        _16,
+        _32,
+        _64,
+        _128,
+    }
+
+    public enum GaussianBlurOffset
+    {
+        _0,
+        _1,
+        _2,
+        _4,
+        _8,
+        _16,
+    }
+
     public class LightweightRenderPipelineAsset : RenderPipelineAsset, ISerializationCallbackReceiver
     {
         Shader m_DefaultShader;
@@ -107,6 +126,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         [SerializeField] bool m_SoftShadowsSupported = false;
         [SerializeField] bool m_SupportsMainCharacterShadows = false;
         [SerializeField] ShadowResolution m_MainCharacterShadowmapResolution = ShadowResolution._1024;
+        [SerializeField] bool _SupportsDeepShadowMaps = false;
+        [SerializeField] ShadowResolution _DeepShadowMapsSize = ShadowResolution._1024;
+        [SerializeField] DeepShadowDepth _DeepShadowMapsDepth = DeepShadowDepth._32;
+        [SerializeField] GaussianBlurOffset _DeepShadowMapsBlurOffset = GaussianBlurOffset._1;
+
 
         // Advanced settings
         [SerializeField] bool m_SupportsDynamicBatching = true;
@@ -365,6 +389,26 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public int mainCharacterShadowmapResolution
         {
             get { return (int)m_MainCharacterShadowmapResolution; }
+        }
+
+        public bool supportsDeepShadowMaps
+        {
+            get { return _SupportsDeepShadowMaps; }
+        }
+
+        public int deepShadowMapsSize
+        {
+            get { return (int)_DeepShadowMapsSize; }
+        }
+
+        public int deepShadowMapsDepth
+        {
+            get { return (int)_DeepShadowMapsDepth; }
+        }
+
+        public int deepShadowMapsBlurOffset
+        {
+            get { return (int)_DeepShadowMapsBlurOffset; }
         }
 
         public bool supportsDynamicBatching

@@ -133,11 +133,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             {
                 pipelineAsset.resetDeepShadowDataCompute,
             };
-
-            //TODO: settings
+            
             ComputeBuffer DeepShadowMapsCountBuffer = null;
             ComputeBuffer DeepShadowMapsDataBuffer = null;
-            DeepShadowCasterPass.NewDeepShadowMapsBuffer(ref DeepShadowMapsCountBuffer, ref DeepShadowMapsDataBuffer);
+            //FIXME: Lazy new
+            DeepShadowMapsCountBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize, sizeof(uint));
+            DeepShadowMapsDataBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsDepth, sizeof(float) * 2);
             _Buffers = new[]
             {
                 DeepShadowMapsCountBuffer,

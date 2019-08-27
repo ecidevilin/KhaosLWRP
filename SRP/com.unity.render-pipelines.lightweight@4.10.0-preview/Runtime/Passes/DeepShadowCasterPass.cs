@@ -8,10 +8,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
     {
         const string k_RenderDeepShadowCaster = "Render Deep Shadow Caster";
 
-        // Settings
-        const int _DeepShadowMapSize = 1024;
-        const int _DeepShadowMapDepth = 32;
-
         private ComputeBuffer _CountBuffer;
         private ComputeBuffer _DataBuffer;
 
@@ -28,13 +24,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public DeepShadowCasterPass()
         {
             RegisterShaderPassName("DeepShadowCaster");
-        }
-
-        // TODO: settings
-        public static void NewDeepShadowMapsBuffer(ref ComputeBuffer CountBuffer, ref ComputeBuffer DataBuffer)
-        {
-            CountBuffer = new ComputeBuffer(_DeepShadowMapSize * _DeepShadowMapSize, sizeof(uint));
-            DataBuffer = new ComputeBuffer(_DeepShadowMapSize * _DeepShadowMapSize * _DeepShadowMapDepth, sizeof(float) * 2);
         }
 
         public bool Setup(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -91,12 +80,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (renderer == null)
                 throw new ArgumentNullException("renderer");
-
-            //TODO : Settings
-            //if (!renderingData.shadowData.supportsMainLightShadows) 
-            //{
-            //    return;
-            //}
+            
+            if (!renderingData.shadowData.supportsDeepShadowMaps)
+            {
+                return;
+            }
             LightData lightData = renderingData.lightData;
             int shadowLightIndex = lightData.mainLightIndex;
             if (shadowLightIndex == -1)
@@ -120,19 +108,21 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             CommandBuffer cmd = CommandBufferPool.Get(k_RenderDeepShadowCaster);
             using (new ProfilingSample(cmd, k_RenderDeepShadowCaster))
             {
+                int deepShadowMapsSize = shadowData.deepShadowMapsSize;
+                int deepShadowMapsDepth = shadowData.deepShadowMapsDepth;
                 // Reset
                 cmd.SetComputeBufferParam(_ResetCompute, KernelResetBuffer, "_CountBuffer", _CountBuffer);
                 cmd.SetComputeBufferParam(_ResetCompute, KernelResetBuffer, "_DataBuffer", _DataBuffer);
-                cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapSize", _DeepShadowMapSize);
-                cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapDepth", _DeepShadowMapDepth);
-                cmd.DispatchCompute(_ResetCompute, KernelResetBuffer, _DeepShadowMapSize / 8, _DeepShadowMapSize / 8, 1);
+                cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapSize", deepShadowMapsSize);
+                cmd.SetComputeIntParam(_ResetCompute, "_DeepShadowMapDepth", deepShadowMapsDepth);
+                cmd.DispatchCompute(_ResetCompute, KernelResetBuffer, deepShadowMapsSize / 8, deepShadowMapsSize / 8, 1);
 
-                var temp = RenderTexture.GetTemporary(_DeepShadowMapSize, _DeepShadowMapSize, 0, RenderTextureFormat.R8); //Without rt, the second row of the vp matrix is negated
+                var temp = RenderTexture.GetTemporary(deepShadowMapsSize, deepShadowMapsSize, 0, RenderTextureFormat.R8); //Without rt, the second row of the vp matrix is negated
                 
                 // Cast
                 SetRenderTarget(cmd, temp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare, 
                     ClearFlag.Color, Color.black, TextureDimension.Tex2D);
-                cmd.SetViewport(new Rect(Vector2.zero, Vector2.one * _DeepShadowMapSize));
+                cmd.SetViewport(new Rect(Vector2.zero, Vector2.one * deepShadowMapsSize));
 
                 Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, shadowLightIndex, ref shadowData, _ProjMatrix, shadowData.mainCharacterShadowmapWidth);
                 ShadowUtils.SetupShadowCasterConstantBuffer(cmd, ref shadowLight, shadowBias);
@@ -140,8 +130,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cmd.SetViewProjectionMatrices(_ViewMatrix, _ProjMatrix);
                 cmd.SetRandomWriteTarget(1, _CountBuffer);
                 cmd.SetRandomWriteTarget(2, _DataBuffer);
-                cmd.SetGlobalInt("_DeepShadowMapSize", _DeepShadowMapSize);
-                cmd.SetGlobalInt("_DeepShadowMapDepth", _DeepShadowMapDepth);
+                cmd.SetGlobalInt("_DeepShadowMapSize", deepShadowMapsSize);
+                cmd.SetGlobalInt("_DeepShadowMapDepth", deepShadowMapsDepth);
 
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
@@ -158,7 +148,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 {
                     offsetX = 0,
                     offsetY = 0,
-                    resolution = _DeepShadowMapSize,
+                    resolution = deepShadowMapsSize,
                 };
 
                 cmd.SetGlobalMatrix("_DeepShadowMapsWorldToShadow", _DeepShadowMatrix);
@@ -188,29 +178,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             Light light = shadowLight.light;
 
-            //int cascadeCount = m_ShadowCasterCascadesCount;
-            //for (int i = 0; i < k_MaxCascades; ++i)
-            //    m_MainLightShadowMatrices[i] = (cascadeCount >= i) ? m_CascadeSlices[i].shadowTransform : Matrix4x4.identity;
-
-            //// We setup and additional a no-op WorldToShadow matrix in the last index
-            //// because the ComputeCascadeIndex function in Shadows.hlsl can return an index
-            //// out of bounds. (position not inside any cascade) and we want to avoid branching
-            //Matrix4x4 noOpShadowMatrix = Matrix4x4.zero;
-            //noOpShadowMatrix.m33 = (SystemInfo.usesReversedZBuffer) ? 1.0f : 0.0f;
-            //m_MainLightShadowMatrices[k_MaxCascades] = noOpShadowMatrix;
-
-            float invShadowAtlasWidth = 1.0f / shadowData.mainCharacterShadowmapWidth;
-            float invShadowAtlasHeight = 1.0f / shadowData.mainCharacterShadowmapHeight;
-            float invHalfShadowAtlasWidth = 0.5f * invShadowAtlasWidth;
-            float invHalfShadowAtlasHeight = 0.5f * invShadowAtlasHeight;
             cmd.SetGlobalMatrix("_DeepShadowMapsWorldToShadow", _DeepShadowMatrix);
             cmd.SetGlobalFloat("_DeepShadowStrength", light.shadowStrength);
-            //cmd.SetGlobalVector("_MainCharacterShadowmapSize", new Vector4(invShadowAtlasWidth, invShadowAtlasHeight,
-            //    shadowData.mainCharacterShadowmapWidth, shadowData.mainCharacterShadowmapHeight));
-            //cmd.SetGlobalVector("_MainCharacterShadowOffset0", new Vector4(-invHalfShadowAtlasWidth, -invHalfShadowAtlasHeight, 0.0f, 0.0f));
-            //cmd.SetGlobalVector("_MainCharacterShadowOffset1", new Vector4(invHalfShadowAtlasWidth, -invHalfShadowAtlasHeight, 0.0f, 0.0f));
-            //cmd.SetGlobalVector("_MainCharacterShadowOffset2", new Vector4(-invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
-            //cmd.SetGlobalVector("_MainCharacterShadowOffset3", new Vector4(invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
             Vector4 cullingSphereWithSquaredRadius = _CullingSphere;
             cullingSphereWithSquaredRadius.w *= cullingSphereWithSquaredRadius.w;
             cmd.SetGlobalVector("_DeepShadowMapsCullingSphere", cullingSphereWithSquaredRadius);

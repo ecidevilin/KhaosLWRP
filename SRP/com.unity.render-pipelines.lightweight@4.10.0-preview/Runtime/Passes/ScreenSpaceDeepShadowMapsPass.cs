@@ -98,12 +98,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (renderer == null)
                 throw new ArgumentNullException("renderer");
-
-            //TODO : Settings
-            //if (!renderingData.shadowData.supportsMainLightShadows) 
-            //{
-            //    return;
-            //}
+            
+            if (!renderingData.shadowData.supportsDeepShadowMaps)
+            {
+                return;
+            }
             LightData lightData = renderingData.lightData;
             int shadowLightIndex = lightData.mainLightIndex;
             if (shadowLightIndex == -1)
@@ -144,16 +143,21 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
                 cmd.Blit(null, _DeepShadowLut, ssdsm);
 
+                result = _DeepShadowLut;
+
                 // Blur
-                Material pom = renderer.GetMaterial(MaterialHandle.GaussianBlur);
-                pom.SetFloat("_SampleOffset", 1);
-                _DeepShadowTmp = RenderTexture.GetTemporary(_Descriptor);
-                _DeepShadowTmp.filterMode = FilterMode.Bilinear;
-                _DeepShadowTmp.wrapMode = TextureWrapMode.Clamp;
-                _DeepShadowTmp.name = "_DeepShadowTmp";
-                SetRenderTarget(cmd, _DeepShadowTmp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                    ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
-                cmd.Blit(_DeepShadowLut, _DeepShadowTmp, pom);
+                if (shadowData.deepShadowMapsBlurOffset > 0)
+                {
+                    Material pom = renderer.GetMaterial(MaterialHandle.GaussianBlur);
+                    pom.SetFloat("_SampleOffset", shadowData.deepShadowMapsBlurOffset);
+                    _DeepShadowTmp = RenderTexture.GetTemporary(_Descriptor);
+                    _DeepShadowTmp.filterMode = FilterMode.Bilinear;
+                    _DeepShadowTmp.wrapMode = TextureWrapMode.Clamp;
+                    _DeepShadowTmp.name = "_DeepShadowTmp";
+                    SetRenderTarget(cmd, _DeepShadowTmp, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                        ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
+                    cmd.Blit(_DeepShadowLut, _DeepShadowTmp, pom);
+                }
                 //TODO : for stereo
 
                 result = _DeepShadowTmp;
