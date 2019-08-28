@@ -65,7 +65,7 @@ Varyings ShadowPassVertex(Attributes input)
 half4 ShadowPassFragment(Varyings input) : SV_TARGET
 {
 #ifdef _DEEP_SHADOW_CASTER
-	half alpha = Alpha(SampleAlbedoAlpha(input.uv.xy, TEXTURE2D_PARAM(_MainTex, sampler_MainTex)).a, _Color, _Cutoff);
+	half alpha = Alpha(SampleAlbedoAlpha(input.uv.xy, TEXTURE2D_PARAM(_MainTex, sampler_MainTex)).a, _Color, 0);
 	uint2 lightUV = input.positionCS.xy;
 	uint idx = lightUV.y * _DeepShadowMapSize + lightUV.x;
 	uint originalVal = 0;
