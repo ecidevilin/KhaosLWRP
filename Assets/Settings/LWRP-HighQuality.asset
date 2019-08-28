@@ -39,7 +39,7 @@ MonoBehaviour:
   _SupportsDeepShadowMaps: 1
   _DeepShadowMapsSize: 512
   _DeepShadowMapsDepth: 32
-  _DeepShadowMapsBlurOffset: 1
+  _DeepShadowMapsBlurOffset: 2
   m_SupportsDynamicBatching: 1
   m_MixedLightingSupported: 1
   m_ShadowType: 2

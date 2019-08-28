@@ -12,6 +12,19 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         Count
     }
 
+    public enum ZTest
+    {
+        Disabled,
+        Never,
+        Less,
+        Equal,
+        LEqual,
+        Greater,
+        NotEqual,
+        GEqual,
+        Always,
+    }
+
     public static class ShaderUtils
     {
         static readonly string[] s_ShaderPaths  =

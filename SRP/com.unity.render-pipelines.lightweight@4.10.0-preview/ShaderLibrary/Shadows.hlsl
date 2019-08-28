@@ -295,7 +295,7 @@ half InDeepShadowMaps(float3 positionWS)
 {
 	float3 fromCenter = positionWS - _DeepShadowMapsCullingSphere.xyz;
 	float distances2 = dot(fromCenter, fromCenter);
-	half weight = distances2 < _DeepShadowMapsCullingSphere.z;
+	half weight = distances2 < _DeepShadowMapsCullingSphere.w;
 	return weight;
 }
 

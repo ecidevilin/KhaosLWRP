@@ -88,6 +88,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
+                cmd.SetGlobalInt("_DepthNormalsZWrite", isDepthPrepassEnabled ? 0 : 1);
+                cmd.SetGlobalInt("_DepthNormalsZTest", (int)(isDepthPrepassEnabled ? ZTest.Equal : ZTest.LEqual));
+
                 var sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;
                 var drawSettings = CreateDrawRendererSettings(renderingData.cameraData.camera, sortFlags, RendererConfiguration.None, renderingData.supportsDynamicBatching);
                 if (renderingData.cameraData.isStereoEnabled)

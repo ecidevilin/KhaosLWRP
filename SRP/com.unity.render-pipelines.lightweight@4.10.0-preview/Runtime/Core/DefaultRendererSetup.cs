@@ -186,7 +186,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             if (requiresDepthNormalsPass)
             {
-                m_DepthNormalsPass.Setup(baseDescriptor, DepthNormalsTexture, DepthTexture, requiresDepthPrepass, sampleCount);
+                m_DepthNormalsPass.Setup(baseDescriptor, DepthNormalsTexture, depthHandle, requiresDepthPrepass, sampleCount);
                 renderer.EnqueuePass(m_DepthNormalsPass);
             }
 

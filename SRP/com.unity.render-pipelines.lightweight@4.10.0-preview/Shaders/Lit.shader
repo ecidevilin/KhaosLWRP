@@ -186,8 +186,8 @@ Shader "Lightweight Render Pipeline/Lit"
 			Name "DepthNormals"
 			Tags{"LightMode" = "DepthNormals"}
 
-			ZWrite On
-			ZTest LEqual
+			ZWrite [_DepthNormalsZWrite]
+			ZTest [_DepthNormalsZTest]
 			Cull[_Cull]
 
 			HLSLPROGRAM
@@ -201,7 +201,7 @@ Shader "Lightweight Render Pipeline/Lit"
 
 			// -------------------------------------
 			// Material Keywords
-			//#pragma shader_feature _ALPHATEST_ON
+			#pragma multi_compile _ _ALPHATEST_ON
 			#pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
 
 			//--------------------------------------
