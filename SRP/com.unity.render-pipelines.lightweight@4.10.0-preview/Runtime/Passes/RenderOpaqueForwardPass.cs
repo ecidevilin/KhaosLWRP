@@ -96,6 +96,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
+                cmd.SetGlobalInt("_FwdLitZWrite", (int)(isDepthPrepassEnabled ? 0 : 1)); //TODO:
+                cmd.SetGlobalInt("_FwdLitZTest", (int)(isDepthPrepassEnabled ? ZTest.Equal : ZTest.LEqual));
                 Camera camera = renderingData.cameraData.camera;
                 XRUtils.DrawOcclusionMesh(cmd, camera, renderingData.cameraData.isStereoEnabled);
                 var sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;

@@ -64,6 +64,7 @@ Shader "Lightweight Render Pipeline/Lit"
             Blend[_SrcBlend][_DstBlend]
             ZWrite[_ZWrite]
             Cull[_Cull]
+			ZTest[_FwdLitZTest]
 
             HLSLPROGRAM
             // Required to compile gles 2.0 with standard SRP library
