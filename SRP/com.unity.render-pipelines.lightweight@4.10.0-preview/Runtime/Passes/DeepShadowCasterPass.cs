@@ -142,7 +142,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     ClearFlag.Color, Color.black, TextureDimension.Tex2D);
                 cmd.SetViewport(new Rect(Vector2.zero, Vector2.one * deepShadowMapsSize));
 
-                Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, shadowLightIndex, ref shadowData, _ProjMatrix, shadowData.mainCharacterShadowmapWidth);
+                Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, shadowLightIndex, ref shadowData, _ProjMatrix, shadowData.deepShadowMapsSize);
                 ShadowUtils.SetupShadowCasterConstantBuffer(cmd, ref shadowLight, shadowBias);
 
                 cmd.SetViewProjectionMatrices(_ViewMatrix, _ProjMatrix);
