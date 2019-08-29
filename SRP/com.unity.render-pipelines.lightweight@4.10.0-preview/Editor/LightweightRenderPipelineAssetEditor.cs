@@ -33,8 +33,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static GUIContent supportsMainCharacterShadowsText = EditorGUIUtility.TrTextContent("Individual shadowmap for the main character", "If enabled an individual shadowmap will be drawn for the main character.");
             public static GUIContent mainCharacterShadowmapResolutionText = EditorGUIUtility.TrTextContent("Character Shadow Resolution", "Resolution of the main character shadowmap texture.");
             public static GUIContent supportsDeepShadowMapsText = EditorGUIUtility.TrTextContent("Deep shadow maps for hair", "if enabled deep shadow maps will be drawn for hair to improve shadow quality.");
-            public static GUIContent deepShadowMapsSizeText = EditorGUIUtility.TrTextContent("Deep shadow maps size", "Size of the deep shadow maps");
-            public static GUIContent deepShadowMapsDepthText = EditorGUIUtility.TrTextContent("Deep shadow maps depth", "Depth of the deep shadow maps");
+            public static GUIContent deepShadowMapsSizeText = EditorGUIUtility.TrTextContent("Deep shadow maps size", "Size of the deep shadow maps, something like the resolution of shadow maps");
+            public static GUIContent deepShadowMapsDepthText = EditorGUIUtility.TrTextContent("Deep shadow maps depth", "Larger depth means less flicker but more memory cost.");
             public static GUIContent deepShadowMapsBlurOffsetText = EditorGUIUtility.TrTextContent("Deep shadow maps blur offset", "The blur offset to filter the deep shadow LUT.");
             // Additional lights
             public static GUIContent addditionalLightsRenderingModeText = EditorGUIUtility.TrTextContent("Additional Lights", "Additional lights support.");
