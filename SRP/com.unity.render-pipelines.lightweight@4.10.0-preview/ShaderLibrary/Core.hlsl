@@ -92,6 +92,8 @@ void AlphaDiscard(real alpha, real cutoff, real offset = 0.0h)
 {
 #ifdef _ALPHATEST_ON
     clip(alpha - cutoff + offset);
+#elif defined(_ALPHATEST_INVERSE)
+    clip(cutoff - alpha + offset);
 #endif
 }
 

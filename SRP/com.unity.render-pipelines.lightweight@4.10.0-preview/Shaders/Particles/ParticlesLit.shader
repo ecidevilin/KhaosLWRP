@@ -64,7 +64,8 @@ Shader "Lightweight Render Pipeline/Particles/Lit"
             #pragma multi_compile __ SOFTPARTICLES_ON
             #pragma target 2.0
 
-            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ALPHAMODULATE_ON
+            #pragma shader_feature _ _ALPHATEST_ON _ALPHATEST_INVERSE
+			#pragma shader_feature _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ALPHAMODULATE_ON
             #pragma shader_feature _METALLICGLOSSMAP
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _EMISSION
