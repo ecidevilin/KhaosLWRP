@@ -7,13 +7,14 @@ float4 _ShadowBias; // x: depth bias, y: normal bias
 float3 _LightDirection;
 
 #ifdef _DEEP_SHADOW_CASTER
+#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/DeepShadowMaps.hlsl"
 CBUFFER_START(_DeepShadowCasterBuffer)
 uint _DeepShadowMapSize;
 uint _DeepShadowMapDepth;
 CBUFFER_END
 
 RWStructuredBuffer<uint> _CountBufferUAV	: register(u1);
-RWStructuredBuffer<float2> _DataBufferUAV	: register(u2);
+RWStructuredBuffer<uint> _DataBufferUAV	: register(u2);
 #endif
 
 struct Attributes
@@ -72,7 +73,7 @@ half4 ShadowPassFragment(Varyings input) : SV_TARGET
 	InterlockedAdd(_CountBufferUAV[idx], 1, originalVal);
 	originalVal = min(_DeepShadowMapDepth - 1, originalVal);
 	uint offset = idx * _DeepShadowMapDepth;
-	_DataBufferUAV[offset + originalVal] = float2(input.positionCS.z, 1 - alpha);
+	_DataBufferUAV[offset + originalVal] = PackDepthAndAlpha(input.positionCS.z, alpha);
 	return input.positionCS.z;
 #else
 	Alpha(SampleAlbedoAlpha(input.uv, TEXTURE2D_PARAM(_MainTex, sampler_MainTex)).a, _Color, _Cutoff);

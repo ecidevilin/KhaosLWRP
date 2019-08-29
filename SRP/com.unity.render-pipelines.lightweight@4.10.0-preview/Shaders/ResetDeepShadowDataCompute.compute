@@ -1,19 +1,21 @@
-﻿#pragma kernel KernelResetBuffer
+﻿#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/DeepShadowMaps.hlsl"
+
+#pragma kernel KernelResetBuffer
 #pragma kernel KernelTestDeepShadowMap
 
 uint _DeepShadowMapSize;
 uint _DeepShadowMapDepth;
 
 RWStructuredBuffer<uint> _CountBuffer;
-RWStructuredBuffer<float2> _DataBuffer;
+RWStructuredBuffer<uint> _DataBuffer;
 
 [numthreads(8,8,1)]
 void KernelResetBuffer(uint3 id : SV_DispatchThreadID)
 {
 	_CountBuffer[id.y * _DeepShadowMapSize + id.x] = 0;
-	for (int i = 0; i < _DeepShadowMapDepth; i++)
+	for (uint i = 0; i < _DeepShadowMapDepth; i++)
 	{
-		_DataBuffer[_DeepShadowMapDepth * (id.y * _DeepShadowMapSize + id.x) + i] = float2(0, 0);
+		_DataBuffer[_DeepShadowMapDepth * (id.y * _DeepShadowMapSize + id.x) + i] = 0;
 	}
 }
 
@@ -23,5 +25,7 @@ RWTexture2D<float4> _TestRt;
 void KernelTestDeepShadowMap(uint3 id : SV_DispatchThreadID)
 {
 	uint count = _CountBuffer[(id.y * _DeepShadowMapSize + id.x)];
-	_TestRt[id.xy] = float4(_DataBuffer[(id.y * _DeepShadowMapSize + id.x)*_DeepShadowMapDepth  + 1].xy, count > 2, count > 3);
+	float d, t;
+	UnpackDepthAndTransparency(_DataBuffer[(id.y * _DeepShadowMapSize + id.x)*_DeepShadowMapDepth + 1], d, t);
+	_TestRt[id.xy] = float4(d, t, count > 2, count > 3);
 }

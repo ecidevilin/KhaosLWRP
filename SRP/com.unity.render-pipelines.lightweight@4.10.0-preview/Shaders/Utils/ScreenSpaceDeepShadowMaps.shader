@@ -15,6 +15,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl"
         #include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/Shadows.hlsl"
+		#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/DeepShadowMaps.hlsl"
 
 #if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED) //TODO: 
         TEXTURE2D_ARRAY_FLOAT(_CameraDepthTexture);
@@ -71,7 +72,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
         }
 
 		StructuredBuffer<uint> _CountBuffer;
-		StructuredBuffer<float2> _DataBuffer;
+		StructuredBuffer<uint> _DataBuffer;
 
 		float4 TransformWorldToDeepShadowCoord(float3 positionWS)
 		{
@@ -119,18 +120,20 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 			uint offset = lidx * _DeepShadowMapDepth;
 
 			uint i;
-			float2 data;
+			uint data;
 			float shading = 1;
 			for (i = 0; i < num; i++)
 			{
 				data = _DataBuffer[offset + i];
+				float z = GetDepthFromPackedData(data);
 #if UNITY_REVERSED_Z
-				if (data.x > depth)
+				if (z > depth)
 #else
-				if (data.x < depth)
+				if (z < depth)
 #endif
 				{
-					shading *= data.y;
+					float t = GetTransparencyFromPackedData(data);
+					shading *= t;
 				}
 				if (shading < 0.0001)
 				{

@@ -139,7 +139,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             if (pipelineAsset.supportsDeepShadowMaps)
             {
                 DeepShadowMapsCountBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize, sizeof(uint));
-                DeepShadowMapsDataBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsDepth, sizeof(float) * 2);
+                DeepShadowMapsDataBuffer = new ComputeBuffer(pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsSize * pipelineAsset.deepShadowMapsDepth, sizeof(uint));
             }
             _Buffers = new[]
             {
