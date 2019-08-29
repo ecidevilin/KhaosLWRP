@@ -20,17 +20,18 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         private RenderTargetHandle _Destination;
 
-        private RenderTexture _DeepShadowLut;
-        private RenderTexture _DeepShadowTmp;
+        private RenderTargetHandle _DeepShadowLut;
+        private RenderTargetHandle _DeepShadowTmp;
         private RenderTextureDescriptor _Descriptor;
-       
+
+
+        static RenderTargetHandle _DeepShadowTest;
 
         public ScreenSpaceDeepShadowMapsPass()
         {
             _ShadowLutFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.R8)
                 ? RenderTextureFormat.R8
                 : RenderTextureFormat.ARGB32;
-            _ShadowLutFormat = RenderTextureFormat.RG16;
         }
 
         public bool Setup(ScriptableRenderer renderer, RenderTextureDescriptor baseDescriptor, RenderTargetHandle destination, ref RenderingData renderingData)
@@ -65,15 +66,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             _Descriptor = baseDescriptor;
             _Descriptor.colorFormat = _ShadowLutFormat;
             _Descriptor.depthBufferBits = 0;
-
-            if (null == _TestRt)
-            {
-                _TestRt = new RenderTexture(1024, 1024, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear)
-                {
-                    enableRandomWrite = true,
-                };
-                _TestRt.Create();
-            }
+            _DeepShadowLut.Init("_DeepShadowLut");
+            _DeepShadowTmp.Init("_DeepShadowTmp");
+            _DeepShadowTest.Init("_DeepShadowTest");
 
             return true;
         }
@@ -82,20 +77,23 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             if (cmd == null)
                 throw new ArgumentNullException("cmd");
-            if (_DeepShadowLut)
+            if (_DeepShadowLut != RenderTargetHandle.CameraTarget)
             {
-                RenderTexture.ReleaseTemporary(_DeepShadowLut);
-                _DeepShadowLut = null;
+                cmd.ReleaseTemporaryRT(_DeepShadowLut.id);
+                _DeepShadowLut = RenderTargetHandle.CameraTarget;
             }
-            if (_DeepShadowTmp)
+            if (_DeepShadowTmp != RenderTargetHandle.CameraTarget)
             {
-                RenderTexture.ReleaseTemporary(_DeepShadowTmp);
-                _DeepShadowTmp = null;
+                cmd.ReleaseTemporaryRT(_DeepShadowTmp.id);
+                _DeepShadowTmp = RenderTargetHandle.CameraTarget;
+            }
+            if (_DeepShadowTest != RenderTargetHandle.CameraTarget)
+            {
+                cmd.ReleaseTemporaryRT(_DeepShadowTest.id);
+                _DeepShadowTest = RenderTargetHandle.CameraTarget;
             }
             base.FrameCleanup(cmd);
         }
-
-        static RenderTexture _TestRt;
 
         /// <inheritdoc/>
         public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
@@ -116,38 +114,40 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             VisibleLight shadowLight = lightData.visibleLights[shadowLightIndex];
             ShadowData shadowData = renderingData.shadowData;
 
-            RenderTexture result;
+            RenderTargetIdentifier result;
 
             CommandBuffer cmd = CommandBufferPool.Get(k_RenderScreenSpaceDeepShadowMaps);
             using (new ProfilingSample(cmd, k_RenderScreenSpaceDeepShadowMaps))
             {
+#if UNITY_EDITOR
+                var testDescriptor = _Descriptor;
+                testDescriptor.enableRandomWrite = true;
+                testDescriptor.colorFormat = RenderTextureFormat.ARGB32;
+                cmd.GetTemporaryRT(_DeepShadowTest.id, testDescriptor);
                 var _ResetCompute = renderer.GetCompute(ComputeHandle.ResetDeepShadowDataCompute);
                 int KernelTestDeepShadowMap = _ResetCompute.FindKernel("KernelTestDeepShadowMap");
-                cmd.SetRenderTarget(_TestRt);
+                cmd.SetRenderTarget(_DeepShadowTest.Identifier());
                 cmd.SetComputeBufferParam(_ResetCompute, KernelTestDeepShadowMap, "_CountBuffer", _CountBuffer);
                 cmd.SetComputeBufferParam(_ResetCompute, KernelTestDeepShadowMap, "_DataBuffer", _DataBuffer);
-                cmd.SetComputeTextureParam(_ResetCompute, KernelTestDeepShadowMap, "_TestRt", _TestRt);
-                cmd.DispatchCompute(_ResetCompute, KernelTestDeepShadowMap, 1024 / 8, 1024 / 8, 1);
+                cmd.SetComputeTextureParam(_ResetCompute, KernelTestDeepShadowMap, "_TestRt", _DeepShadowTest.Identifier());
+                cmd.DispatchCompute(_ResetCompute, KernelTestDeepShadowMap, shadowData.deepShadowMapsSize / 8, shadowData.deepShadowMapsSize / 8, 1);
 
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
+#endif
 
                 // Resolve
                 Material ssdsm = renderer.GetMaterial(MaterialHandle.ScreenSpaceDeepShadowMaps);
                 ssdsm.SetBuffer(Shader.PropertyToID("_CountBuffer"), _CountBuffer);
                 ssdsm.SetBuffer(Shader.PropertyToID("_DataBuffer"), _DataBuffer);
-                //TODO: Settings for blurring
-                _DeepShadowLut = RenderTexture.GetTemporary(_Descriptor);
-                _DeepShadowLut.filterMode = FilterMode.Bilinear;
-                _DeepShadowLut.wrapMode = TextureWrapMode.Clamp;
-                _DeepShadowLut.name = "_DeepShadowLut";
+                cmd.GetTemporaryRT(_DeepShadowLut.id, _Descriptor);
 
-
-                SetRenderTarget(cmd, _DeepShadowLut, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                RenderTargetIdentifier dsLutId = _DeepShadowLut.Identifier();
+                SetRenderTarget(cmd, dsLutId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                     ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
-                cmd.Blit(null, _DeepShadowLut, ssdsm);
+                cmd.Blit(dsLutId, dsLutId, ssdsm);
 
-                result = _DeepShadowLut;
+                result = dsLutId;
 
                 // Blur
                 int blurOffset = shadowData.deepShadowMapsBlurOffset;
@@ -155,12 +155,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 if (blurOffset > 0)
                 {
                     Material pom = renderer.GetMaterial(MaterialHandle.GaussianBlur);
-                    _DeepShadowTmp = RenderTexture.GetTemporary(_Descriptor);
-                    _DeepShadowTmp.filterMode = FilterMode.Bilinear;
-                    _DeepShadowTmp.wrapMode = TextureWrapMode.Clamp;
-                    _DeepShadowTmp.name = "_DeepShadowTmp";
-                    RenderTexture src = _DeepShadowLut;
-                    RenderTexture dst = _DeepShadowTmp;
+                    cmd.GetTemporaryRT(_DeepShadowTmp.id, _Descriptor);
+                    RenderTargetIdentifier src = dsLutId;
+                    RenderTargetIdentifier dst = _DeepShadowTmp.Identifier();
                     while (blurOffset > 0)
                     {
                         pom.SetFloat("_SampleOffset", blurOffset);
