@@ -31,7 +31,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         public DeepShadowCasterPass()
         {
-            RegisterShaderPassName("DeepShadowCaster");
+            //NOTE: Not working when rendering shadows
+            //RegisterShaderPassName("DeepShadowCaster");
         }
 
         public bool Setup(ScriptableRenderer renderer, ref RenderingData renderingData)

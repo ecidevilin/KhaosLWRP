@@ -142,12 +142,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 ssdsm.SetBuffer(Shader.PropertyToID("_DataBuffer"), _DataBuffer);
                 cmd.GetTemporaryRT(_DeepShadowLut.id, _Descriptor);
 
-                RenderTargetIdentifier dsLutId = _DeepShadowLut.Identifier();
-                SetRenderTarget(cmd, dsLutId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                RenderTargetIdentifier lutId = _DeepShadowLut.Identifier();
+                SetRenderTarget(cmd, lutId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                     ClearFlag.Color | ClearFlag.Depth, Color.black, _Descriptor.dimension);
-                cmd.Blit(dsLutId, dsLutId, ssdsm);
+                cmd.Blit(lutId, lutId, ssdsm);
 
-                result = dsLutId;
+                result = lutId;
 
                 // Blur
                 int blurOffset = shadowData.deepShadowMapsBlurOffset;
@@ -156,7 +156,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 {
                     Material pom = renderer.GetMaterial(MaterialHandle.GaussianBlur);
                     cmd.GetTemporaryRT(_DeepShadowTmp.id, _Descriptor);
-                    RenderTargetIdentifier src = dsLutId;
+                    RenderTargetIdentifier src = lutId;
                     RenderTargetIdentifier dst = _DeepShadowTmp.Identifier();
                     while (blurOffset > 0)
                     {
