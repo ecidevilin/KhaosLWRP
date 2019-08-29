@@ -882,12 +882,32 @@ PrefabInstance:
       propertyPath: m_ReflectionProbeUsage
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 303237970, guid: a2bc2e4bb71ddc44ca38459dcd98e135, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 519257147, guid: a2bc2e4bb71ddc44ca38459dcd98e135, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1117867012, guid: a2bc2e4bb71ddc44ca38459dcd98e135, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1168566293, guid: a2bc2e4bb71ddc44ca38459dcd98e135, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1374806709, guid: a2bc2e4bb71ddc44ca38459dcd98e135, type: 3}
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1374806709, guid: a2bc2e4bb71ddc44ca38459dcd98e135, type: 3}
       propertyPath: m_ReflectionProbeUsage
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1785200742, guid: a2bc2e4bb71ddc44ca38459dcd98e135, type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
