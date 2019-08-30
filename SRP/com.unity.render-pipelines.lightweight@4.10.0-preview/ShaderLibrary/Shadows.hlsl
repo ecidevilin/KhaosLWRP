@@ -233,7 +233,7 @@ half MainLightRealtimeShadow(float4 shadowCoord)
 #endif
 }
 
-half MainLightRealtimeShadow(float4 shadowCoord, float4 shadowCoord2)
+half MainLightRealtimeShadow(float4 shadowCoord, float4 shadowCoord2, float4 shadowCoord3)
 {
 #if (!defined(_MAIN_LIGHT_SHADOWS) && !defined(_MAIN_CHARACTER_SHADOWS)) || defined(_RECEIVE_SHADOWS_OFF)
 	return 1.0h;
@@ -246,10 +246,12 @@ half MainLightRealtimeShadow(float4 shadowCoord, float4 shadowCoord2)
 	half shadowStrength = GetMainLightShadowStrength();
 	half atten = SampleShadowmap(shadowCoord, TEXTURE2D_PARAM(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowSamplingData, shadowStrength, false);
 #ifdef _MAIN_CHARACTER_SHADOWS
-	{
 		half mcAtten = SampleShadowmap(shadowCoord2, TEXTURE2D_PARAM(_MainCharacterShadowmapTexture, sampler_MainCharacterShadowmapTexture), GetMainCharacterShadowSamplingData(), _MainCharacterShadowStrength, false);
 		atten = lerp(atten, mcAtten, shadowCoord2.w);
-	}
+#endif
+#ifdef _DEEP_SHADOW_MAPS
+		half dsmAtten = SAMPLE_TEXTURE2D(_DeepShadowLut, sampler_DeepShadowLut, shadowCoord3.xy).r;
+		atten = lerp(atten, dsmAtten, shadowCoord3.w);
 #endif
 	return atten;
 #endif
@@ -297,6 +299,13 @@ half InDeepShadowMaps(float3 positionWS)
 	float distances2 = dot(fromCenter, fromCenter);
 	half weight = distances2 < _DeepShadowMapsCullingSphere.w;
 	return weight;
+}
+
+float4 GetScreenSpaceDeepShadowCoord(VertexPositionInputs vertexInput)
+{
+	float4 screenPos = ComputeScreenPos(vertexInput.positionCS);
+	screenPos /= screenPos.w;
+	return screenPos * InDeepShadowMaps(vertexInput.positionWS);
 }
 
 #endif

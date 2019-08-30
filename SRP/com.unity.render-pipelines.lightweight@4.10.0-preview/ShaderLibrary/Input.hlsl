@@ -21,8 +21,9 @@ struct InputData
     half3   normalWS;
     half3   viewDirectionWS;
     float4  shadowCoord;
-#if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN
+#if defined(_MAIN_CHARACTER_SHADOWS) || defined(_DEEP_SHADOW_MAPS)
 	float4  shadowCoord2;
+	float4  shadowCoord3;
 #endif
     half    fogCoord;
     half3   vertexLighting;

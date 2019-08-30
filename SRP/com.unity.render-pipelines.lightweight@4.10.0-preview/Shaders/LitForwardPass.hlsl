@@ -39,6 +39,9 @@ struct Varyings
 #if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN
 	float4 shadowCoord2				: TEXCOORD8;
 #endif
+#if defined(_DEEP_SHADOW_MAPS) && !SHADOWS_SCREEN
+	float4 shadowCoord3				: TEXCOORD9;
+#endif
 
     float4 positionCS               : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -74,13 +77,25 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
 #else
     inputData.shadowCoord = float4(0, 0, 0, 0);
 #endif
-#if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN
-#ifdef _RECEIVE_SHADOWS_OFF
+
+#if defined(_MAIN_CHARACTER_SHADOWS) || defined(_DEEP_SHADOW_MAPS)
+#if SHADOWS_SCREEN || defined(_RECEIVE_SHADOWS_OFF)
 	inputData.shadowCoord2 = float4(0, 0, 0, 0);
+	inputData.shadowCoord3 = float4(0, 0, 0, 0);
 #else
+#ifdef _MAIN_CHARACTER_SHADOWS
 	inputData.shadowCoord2 = input.shadowCoord2;
+#else
+	inputData.shadowCoord2 = float4(0, 0, 0, 0);
+#endif
+#ifdef _DEEP_SHADOW_MAPS
+	inputData.shadowCoord3 = input.shadowCoord3;
+#else
+	inputData.shadowCoord3 = float4(0, 0, 0, 0);
 #endif
 #endif
+#endif
+
     inputData.fogCoord = input.fogFactorAndVertexLight.x;
     inputData.vertexLighting = input.fogFactorAndVertexLight.yzw;
     inputData.bakedGI = SAMPLE_GI(input.lightmapUV, input.vertexSH, inputData.normalWS);
@@ -134,6 +149,9 @@ Varyings LitPassVertex(Attributes input)
 #endif
 #if defined(_MAIN_CHARACTER_SHADOWS) && !SHADOWS_SCREEN && !defined(_RECEIVE_SHADOWS_OFF)
 	output.shadowCoord2 = GetShadowCoordMC(vertexInput);
+#endif
+#if defined(_DEEP_SHADOW_MAPS) && !SHADOWS_SCREEN && !defined(_RECEIVE_SHADOWS_OFF)
+	output.shadowCoord3 = GetScreenSpaceDeepShadowCoord(vertexInput);
 #endif
 
     output.positionCS = vertexInput.positionCS;
