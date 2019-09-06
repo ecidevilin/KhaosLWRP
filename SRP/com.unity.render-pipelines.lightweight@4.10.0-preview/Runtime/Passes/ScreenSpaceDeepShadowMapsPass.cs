@@ -66,8 +66,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             _Descriptor = baseDescriptor;
             _Descriptor.colorFormat = _ShadowLutFormat;
             _Descriptor.depthBufferBits = 0;
-            _DeepShadowLut.Init("_DeepShadowLut");
-            _DeepShadowTmp.Init("_DeepShadowTmp");
+            _DeepShadowLut.Init("_DSMLut");
+            _DeepShadowTmp.Init("_DSMTmp");
             _DeepShadowTest.Init("_DeepShadowTest");
 
             return true;
@@ -86,11 +86,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             {
                 cmd.ReleaseTemporaryRT(_DeepShadowTmp.id);
                 _DeepShadowTmp = RenderTargetHandle.CameraTarget;
-            }
-            if (_DeepShadowTest != RenderTargetHandle.CameraTarget)
-            {
-                cmd.ReleaseTemporaryRT(_DeepShadowTest.id);
-                _DeepShadowTest = RenderTargetHandle.CameraTarget;
             }
             base.FrameCleanup(cmd);
         }
@@ -176,6 +171,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cmd.Clear();
 
                 cmd.SetGlobalTexture(_Destination.id, result);
+                cmd.ReleaseTemporaryRT(_DeepShadowTest.id);
             }
             //SetKeyword
             CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.DeepShadowMaps, true);

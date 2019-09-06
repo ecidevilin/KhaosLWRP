@@ -86,6 +86,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         _16 = 16,
     }
 
+    public enum MomentsCount
+    {
+        _4 = 4,
+        _8 = 8,
+    }
+
     public class LightweightRenderPipelineAsset : RenderPipelineAsset, ISerializationCallbackReceiver
     {
         Shader m_DefaultShader;
@@ -98,6 +104,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         [SerializeField] bool m_RequireOpaqueTexture = false;
         [SerializeField] Downsampling m_OpaqueDownsampling = Downsampling._2xBilinear;
         [SerializeField] bool m_RequireDepthNormalsTexture = false;
+
+        [SerializeField] bool _supportsOIT = false;
+        [SerializeField] MomentsCount _momentsCount = MomentsCount._4;
 
         // Quality settings
         [SerializeField] bool m_SupportsHDR = false;
@@ -278,6 +287,16 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public bool supportsCameraDepthNormalsTexture
         {
             get { return m_RequireDepthNormalsTexture; }
+        }
+
+        public bool supportsOIT
+        {
+            get { return _supportsOIT; }
+        }
+
+        public int momentsCount
+        {
+            get { return (int)_momentsCount; }
         }
 
         public bool supportsHDR
@@ -518,6 +537,16 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public Shader gaussianBlurShader
         {
             get { return resources != null ? resources.gaussianBlurShader : null; }
+        }
+
+        public Shader oitCompositeShader
+        {
+            get { return resources != null ? resources.oitCompositeShader : null; }
+        }
+
+        public Shader momentOITCompositeShader
+        {
+            get { return resources != null ? resources.momentOITCompositeShader : null; }
         }
 
         public ComputeShader resetDeepShadowDataCompute

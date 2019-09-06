@@ -58,6 +58,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public bool supportsCameraOpaqueTexture { get; private set; }
             public Downsampling opaqueDownsampling { get; private set; }
             public bool supportsCameraDepthNormalsTexture { get; private set; }
+            public bool supportsOIT { get; private set; }
+            public int momentsCount { get; private set; }
             public bool supportsHDR { get; private set; }
             public int msaaSampleCount { get; private set; }
             public float renderScale { get; private set; }
@@ -92,6 +94,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cache.supportsCameraOpaqueTexture = asset.supportsCameraOpaqueTexture;
                 cache.opaqueDownsampling = asset.opaqueDownsampling;
                 cache.supportsCameraDepthNormalsTexture = asset.supportsCameraDepthNormalsTexture;
+
+                cache.supportsOIT = asset.supportsOIT;
+                cache.momentsCount = asset.momentsCount;
 
                 // Quality settings
                 cache.msaaSampleCount = asset.msaaSampleCount;
@@ -326,6 +331,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             bool canSkipFrontToBackSorting = (camera.opaqueSortMode == OpaqueSortMode.Default && hasHSRGPU) || camera.opaqueSortMode == OpaqueSortMode.NoDistanceSort;
 
             cameraData.defaultOpaqueSortFlags = canSkipFrontToBackSorting ? noFrontToBackOpaqueFlags : commonOpaqueFlags;
+
+            cameraData.supportsOIT = settings.supportsOIT;
+            cameraData.momentsCount = settings.momentsCount;
         }
 
         static void InitializeRenderingData(PipelineSettings settings, ref CameraData cameraData, ref CullResults cullResults,

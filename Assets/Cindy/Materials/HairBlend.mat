@@ -8,18 +8,17 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: HairBlend
-  m_Shader: {fileID: 4800000, guid: b7839dad95683814aa64166edc107ae2, type: 3}
-  m_ShaderKeywords: _ALPHABLEND_INVERSE _ALPHABLEND_ON _ALPHATEST_INVERSE _METALLICSPECGLOSSMAP
-    _NORMALMAP _SPECGLOSSMAP _SPECULAR_SETUP
+  m_Shader: {fileID: 4800000, guid: ee8d1c5c36e125446af7ab708006b34e, type: 3}
+  m_ShaderKeywords: _ALPHABLEND_ON _METALLICSPECGLOSSMAP _NORMALMAP _SPECGLOSSMAP
+    _SPECULAR_SETUP
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: 5000
+  stringTagMap: {}
   disabledShaderPasses:
-  - SHADOWCASTER
   - ALWAYS
+  - SHADOWCASTER
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -83,7 +82,7 @@ Material:
     - _InverseCutout: 1
     - _LightingEnabled: 1
     - _Metallic: 0
-    - _Mode: 7
+    - _Mode: 2
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _ReceiveShadows: 1

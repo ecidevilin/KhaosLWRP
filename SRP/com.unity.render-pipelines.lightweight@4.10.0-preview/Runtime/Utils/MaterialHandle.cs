@@ -9,6 +9,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         ScreenSpaceShadow,
         ScreenSpaceDeepShadowMaps,
         GaussianBlur,
+        OITComposite,
+        MomentOITComposite,
         Count,
     }
 }

@@ -127,6 +127,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 CoreUtils.CreateEngineMaterial(pipelineAsset.screenSpaceShadowShader),
                 CoreUtils.CreateEngineMaterial(pipelineAsset.screenSpaceDeepShadowMapsShader),
                 CoreUtils.CreateEngineMaterial(pipelineAsset.gaussianBlurShader),
+                CoreUtils.CreateEngineMaterial(pipelineAsset.oitCompositeShader),
+                CoreUtils.CreateEngineMaterial(pipelineAsset.momentOITCompositeShader),
             };
 
             _Computes = new[]

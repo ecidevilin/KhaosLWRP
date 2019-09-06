@@ -512,6 +512,7 @@ namespace UnityEditor.Experimental.Rendering.LightweightPipeline
                     material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
                     material.SetInt("_ZWrite", 1);
                     material.DisableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHATEST_INVERSE");
                     material.DisableKeyword("_ALPHABLEND_ON");
                     material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                     material.DisableKeyword("_ALPHAMODULATE_ON");
@@ -524,6 +525,7 @@ namespace UnityEditor.Experimental.Rendering.LightweightPipeline
                     material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
                     material.SetInt("_ZWrite", 1);
                     material.EnableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHATEST_INVERSE");
                     material.DisableKeyword("_ALPHABLEND_ON");
                     material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                     material.DisableKeyword("_ALPHAMODULATE_ON");
@@ -536,6 +538,7 @@ namespace UnityEditor.Experimental.Rendering.LightweightPipeline
                     material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
                     material.SetInt("_ZWrite", 0);
                     material.DisableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHATEST_INVERSE");
                     material.EnableKeyword("_ALPHABLEND_ON");
                     material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                     material.DisableKeyword("_ALPHAMODULATE_ON");
@@ -548,6 +551,7 @@ namespace UnityEditor.Experimental.Rendering.LightweightPipeline
                     material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
                     material.SetInt("_ZWrite", 0);
                     material.DisableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHATEST_INVERSE");
                     material.DisableKeyword("_ALPHABLEND_ON");
                     material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
                     material.DisableKeyword("_ALPHAMODULATE_ON");
@@ -560,6 +564,7 @@ namespace UnityEditor.Experimental.Rendering.LightweightPipeline
                     material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
                     material.SetInt("_ZWrite", 0);
                     material.DisableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHATEST_INVERSE");
                     material.EnableKeyword("_ALPHABLEND_ON");
                     material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                     material.DisableKeyword("_ALPHAMODULATE_ON");
@@ -572,6 +577,7 @@ namespace UnityEditor.Experimental.Rendering.LightweightPipeline
                     material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
                     material.SetInt("_ZWrite", 0);
                     material.DisableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHATEST_INVERSE");
                     material.EnableKeyword("_ALPHABLEND_ON");
                     material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                     material.DisableKeyword("_ALPHAMODULATE_ON");
@@ -584,6 +590,7 @@ namespace UnityEditor.Experimental.Rendering.LightweightPipeline
                     material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
                     material.SetInt("_ZWrite", 0);
                     material.DisableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHATEST_INVERSE");
                     material.DisableKeyword("_ALPHABLEND_ON");
                     material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                     material.EnableKeyword("_ALPHAMODULATE_ON");

@@ -51,6 +51,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public float maxShadowDistance;
         public bool postProcessEnabled;
         public PostProcessLayer postProcessLayer;
+
+        public bool supportsOIT;
+        public int momentsCount;
     }
 
     public struct ShadowData

@@ -21,6 +21,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static GUIContent opaqueDownsamplingText = EditorGUIUtility.TrTextContent("Opaque Downsampling", "The downsampling method that is used for the opaque texture");
             public static GUIContent requireDepthNormalTextureText = EditorGUIUtility.TrTextContent("Depth Normals Texture", "If enabled the pipeline will generate view-space normals and camera's depth that can be bound in shaders as _CameraDepthNormalsTexture.");
 
+            public static GUIContent supportsOITText = EditorGUIUtility.TrTextContent("Order Independent Transparency", "If enabled the pipeline will draw the transparent objects (Render queue > 4500) unsortly.");
+            public static GUIContent momentsCountText = EditorGUIUtility.TrTextContent("Moments Count", "Larger number means more accuracy");
+
             // Quality
             public static GUIContent hdrText = EditorGUIUtility.TrTextContent("HDR", "Controls the global HDR settings.");
             public static GUIContent msaaText = EditorGUIUtility.TrTextContent("Anti Aliasing (MSAA)", "Controls the global anti aliasing settings.");
@@ -79,6 +82,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         SerializedProperty m_OpaqueDownsamplingProp;
         SerializedProperty m_RequireDepthNormalsTextureProp;
 
+        SerializedProperty _SupportsOITProp;
+        SerializedProperty _MomentsCountProp;
+
         SerializedProperty m_HDR;
         SerializedProperty m_MSAA;
         SerializedProperty m_RenderScale;
@@ -136,6 +142,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             m_OpaqueDownsamplingProp = serializedObject.FindProperty("m_OpaqueDownsampling");
             m_RequireDepthNormalsTextureProp = serializedObject.FindProperty("m_RequireDepthNormalsTexture");
 
+            _SupportsOITProp = serializedObject.FindProperty("_supportsOIT");
+            _MomentsCountProp = serializedObject.FindProperty("_momentsCount");
+
             m_HDR = serializedObject.FindProperty("m_SupportsHDR");
             m_MSAA = serializedObject.FindProperty("m_MSAA");
             m_RenderScale = serializedObject.FindProperty("m_RenderScale");
@@ -184,6 +193,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.indentLevel--;
                 EditorGUILayout.PropertyField(m_RequireDepthNormalsTextureProp, Styles.requireDepthNormalTextureText);
+                EditorGUILayout.PropertyField(_SupportsOITProp, Styles.supportsOITText);
+                EditorGUI.indentLevel++;
+                EditorGUI.BeginDisabledGroup(!_SupportsOITProp.boolValue);
+                EditorGUILayout.PropertyField(_MomentsCountProp, Styles.opaqueDownsamplingText);
+                EditorGUI.EndDisabledGroup();
+                EditorGUI.indentLevel--;
                 EditorGUI.indentLevel--;
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();

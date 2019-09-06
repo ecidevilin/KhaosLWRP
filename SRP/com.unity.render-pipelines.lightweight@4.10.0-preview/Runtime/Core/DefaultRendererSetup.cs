@@ -7,6 +7,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
     internal class DefaultRendererSetup : IRendererSetup
     {
         private DepthOnlyPass m_DepthOnlyPass;
+        private CopyDepthPass _CopyDepthForOITPass;
+        private OITDepthOnlyPass _OITDepthOnlyPass;
         private DepthNormalsPass m_DepthNormalsPass;
         private MainLightShadowCasterPass m_MainLightShadowCasterPass;
         private MainCharacterShadowCasterPass m_MainCharacterShadowCasterPass;
@@ -24,6 +26,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private CopyDepthPass m_CopyDepthPass;
         private CopyColorPass m_CopyColorPass;
         private RenderTransparentForwardPass m_RenderTransparentForwardPass;
+        //private RenderWeightedOITForwardPass _RenderWeightedOITForwardPass;
+        private RenderMomentOITForwardPass _RenderMomentOITForwardPass;
         private TransparentPostProcessPass m_TransparentPostProcessPass;
         private FinalBlitPass m_FinalBlitPass;
         private EndXRRenderingPass m_EndXrRenderingPass;
@@ -36,6 +40,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         private RenderTargetHandle ColorAttachment;
         private RenderTargetHandle DepthAttachment;
         private RenderTargetHandle DepthTexture;
+        private RenderTargetHandle OITDepthTexture;
         private RenderTargetHandle OpaqueColor;
         private RenderTargetHandle DepthNormalsTexture;
         private RenderTargetHandle MainLightShadowmap;
@@ -55,6 +60,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 return;
 
             m_DepthOnlyPass = new DepthOnlyPass();
+            _CopyDepthForOITPass = new CopyDepthPass();
+            _OITDepthOnlyPass = new OITDepthOnlyPass();
             m_DepthNormalsPass = new DepthNormalsPass();
             m_MainLightShadowCasterPass = new MainLightShadowCasterPass();
             m_MainCharacterShadowCasterPass = new MainCharacterShadowCasterPass();
@@ -72,6 +79,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             m_CopyDepthPass = new CopyDepthPass();
             m_CopyColorPass = new CopyColorPass();
             m_RenderTransparentForwardPass = new RenderTransparentForwardPass();
+            //_RenderWeightedOITForwardPass = new RenderWeightedOITForwardPass();
+            _RenderMomentOITForwardPass = new RenderMomentOITForwardPass();
             m_TransparentPostProcessPass = new TransparentPostProcessPass();
             m_FinalBlitPass = new FinalBlitPass();
             m_EndXrRenderingPass = new EndXRRenderingPass();
@@ -85,6 +94,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             ColorAttachment.Init("_CameraColorTexture");
             DepthAttachment.Init("_CameraDepthAttachment");
             DepthTexture.Init("_CameraDepthTexture");
+            OITDepthTexture.Init("_OITDepthTexture");
             OpaqueColor.Init("_CameraOpaqueTexture");
             DepthNormalsTexture.Init("_CameraDepthNormalsTexture");
             MainLightShadowmap.Init("_MainLightShadowmapTexture");
@@ -172,6 +182,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             requiresDepthPrepass |= renderingData.cameraData.isStereoEnabled;
             renderer.EnqueuePass(m_SetupForwardRenderingPass);
 
+            bool supportsOIT = renderingData.cameraData.supportsOIT;
+            requiresDepthPrepass |= supportsOIT;
+
             if (requiresDepthPrepass)
             {
                 m_DepthOnlyPass.Setup(baseDescriptor, DepthTexture, sampleCount);
@@ -180,6 +193,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
                 foreach (var pass in camera.GetComponents<IAfterDepthPrePass>())
                     renderer.EnqueuePass(pass.GetPassToEnqueue(m_DepthOnlyPass.descriptor, DepthTexture));
+
+                if (supportsOIT)
+                {
+                    _CopyDepthForOITPass.Setup(depthHandle, OITDepthTexture);
+                    renderer.EnqueuePass(_CopyDepthForOITPass);
+                    _OITDepthOnlyPass.Setup(baseDescriptor, OITDepthTexture, sampleCount);
+                    renderer.EnqueuePass(_OITDepthOnlyPass);
+                }
             }
 
             bool requiresDepthNormalsPass = renderingData.cameraData.requiresDepthNormalsTexture;
@@ -254,6 +275,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             {
                 m_CopyColorPass.Setup(colorHandle, OpaqueColor);
                 renderer.EnqueuePass(m_CopyColorPass);
+            }
+
+            //_RenderWeightedOITForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, rendererConfiguration, sampleCount);
+            //renderer.EnqueuePass(_RenderWeightedOITForwardPass);
+            if (supportsOIT)
+            {
+                _RenderMomentOITForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, rendererConfiguration, sampleCount, renderingData.cameraData.momentsCount);
+                renderer.EnqueuePass(_RenderMomentOITForwardPass);
             }
 
             m_RenderTransparentForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, rendererConfiguration);

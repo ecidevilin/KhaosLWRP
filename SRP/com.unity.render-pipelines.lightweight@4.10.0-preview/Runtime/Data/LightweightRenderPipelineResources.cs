@@ -10,6 +10,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         [FormerlySerializedAs("SamplingShader"), SerializeField] Shader m_SamplingShader = null;
         [FormerlySerializedAs("ScreenSpaceDeepShadowMapsShader"), SerializeField] Shader _ScreenSpaceDeepShadowMapsShader = null;
         [FormerlySerializedAs("GaussianBlurShader"), SerializeField] Shader _GaussianBlurShader = null;
+        [FormerlySerializedAs("OITCompositeShader"), SerializeField] Shader _OITCompositeShader = null;
+        [FormerlySerializedAs("MomentOITCompositeShader"), SerializeField] Shader _MomentOITCompositeShader = null;
         [FormerlySerializedAs("ResetDeepShadowDataCompute"), SerializeField] ComputeShader _ResetDeepShadowDataCompute = null;
 
         public Shader blitShader
@@ -40,6 +42,16 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public Shader gaussianBlurShader
         {
             get { return _GaussianBlurShader; }
+        }
+
+        public Shader oitCompositeShader
+        {
+            get { return _OITCompositeShader; }
+        }
+
+        public Shader momentOITCompositeShader
+        {
+            get { return _MomentOITCompositeShader; }
         }
 
         public ComputeShader resetDeepShadowDataCompute

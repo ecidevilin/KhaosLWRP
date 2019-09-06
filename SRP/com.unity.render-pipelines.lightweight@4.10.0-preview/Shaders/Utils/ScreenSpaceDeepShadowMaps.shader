@@ -18,24 +18,24 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
 		#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/DeepShadowMaps.hlsl"
 
 #if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED) //TODO: 
-        TEXTURE2D_ARRAY_FLOAT(_CameraDepthTexture);
+        TEXTURE2D_ARRAY_FLOAT(_OITDepthTexture);
 #else
-        //TEXTURE2D_FLOAT(_CameraDepthTexture);
+        //TEXTURE2D_FLOAT(_OITDepthTexture);
 #if defined(_DEPTH_MSAA_2) || defined(_DEPTH_MSAA_4)
-		Texture2DMS<float, 1> _CameraDepthTexture;
-		float4 _CameraDepthTexture_TexelSize;
+		Texture2DMS<float, 1> _OITDepthTexture;
+		float4 _OITDepthTexture_TexelSize;
 #else
-		TEXTURE2D_FLOAT(_CameraDepthTexture);
+		TEXTURE2D_FLOAT(_OITDepthTexture);
 #endif
 
-	SAMPLER(sampler_CameraDepthTexture);
+	SAMPLER(sampler_OITDepthTexture);
 
 	float SampleCameraDepth(float2 uv)
 	{
 #if defined(_DEPTH_MSAA_2) || defined(_DEPTH_MSAA_4)
-		return _CameraDepthTexture.Load(uv*_CameraDepthTexture_TexelSize.zw, 0);
+		return _OITDepthTexture.Load(uv*_OITDepthTexture_TexelSize.zw, 0);
 #else
-		return SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, sampler_CameraDepthTexture, uv, 0);
+		return SAMPLE_DEPTH_TEXTURE_LOD(_OITDepthTexture, sampler_OITDepthTexture, uv, 0);
 #endif
 	}
 #endif
@@ -84,12 +84,12 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
             UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
 #if defined(UNITY_STEREO_INSTANCING_ENABLED) || defined(UNITY_STEREO_MULTIVIEW_ENABLED)
-            float deviceDepth = SAMPLE_TEXTURE2D_ARRAY(_CameraDepthTexture, sampler_CameraDepthTexture, input.uv.xy, unity_StereoEyeIndex).r;
+            float deviceDepth = SAMPLE_TEXTURE2D_ARRAY(_OITDepthTexture, sampler_OITDepthTexture, input.uv.xy, unity_StereoEyeIndex).r;
 #else
-            //float deviceDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_CameraDepthTexture, input.uv.xy);
+            //float deviceDepth = SAMPLE_DEPTH_TEXTURE(_OITDepthTexture, sampler_OITDepthTexture, input.uv.xy);
 		float deviceDepth = SampleCameraDepth(input.uv.xy);
 #endif
-
+		
 #if UNITY_REVERSED_Z
             deviceDepth = 1 - deviceDepth;
 #endif
@@ -155,7 +155,7 @@ Shader "Hidden/Lightweight Render Pipeline/ScreenSpaceDeepShadowMaps"
             Cull Off
 
             HLSLPROGRAM
-			#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
+			//#pragma multi_compile _DEPTH_NO_MSAA _DEPTH_MSAA_2 _DEPTH_MSAA_4
 
             #pragma vertex   Vertex
             #pragma fragment Fragment

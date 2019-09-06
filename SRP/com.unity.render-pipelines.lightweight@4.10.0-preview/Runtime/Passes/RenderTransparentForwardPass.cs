@@ -28,7 +28,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             m_TransparentFilterSettings = new FilterRenderersSettings(true)
             {
-                renderQueueRange = RenderQueueRange.transparent,
+                renderQueueRange = RenderQueueUtils.transparent,
             };
         }
 
