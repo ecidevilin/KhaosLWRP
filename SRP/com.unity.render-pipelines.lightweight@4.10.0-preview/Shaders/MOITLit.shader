@@ -34,10 +34,10 @@ Shader "Lightweight Render Pipeline/MOITLit"
         Tags{"RenderType" = "Transparent" "IgnoreProjector" = "True" "PreviewType" = "Plane" "PerformanceChecks" = "False" "RenderPipeline" = "LightweightPipeline" }
 
 		HLSLINCLUDE
-		float2 _ViewZMaxMin;
+		float2 _LogViewDepthMinMax;
 		float WarpDepth(float vd)
 		{
-			return (log(vd) - log(_ViewZMaxMin.y)) / (log(_ViewZMaxMin.x) - log(_ViewZMaxMin.y)) * 2 - 1;
+			return (log(vd) - _LogViewDepthMinMax.x) / (_LogViewDepthMinMax.y - _LogViewDepthMinMax.x) * 2 - 1;
 		}
 		ENDHLSL
 		Pass

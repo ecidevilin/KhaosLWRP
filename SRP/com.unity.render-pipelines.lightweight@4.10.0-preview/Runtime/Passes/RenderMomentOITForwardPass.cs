@@ -25,7 +25,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         RendererConfiguration _RendererConfiguration;
 
-        Vector2 _ViewZMaxMin;
+        Vector2 _ViewDepthMinMax;
 
         public RenderMomentOITForwardPass()
         {
@@ -38,10 +38,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         MomentsCount _MomentsCount;
 
-        public static bool GetViewZMaxMinWithRenderQueue(Camera camera, RenderQueueRange range,
-            out Vector2 maxMin)
+        public static bool GetViewDepthMinMaxWithRenderQueue(Camera camera, RenderQueueRange range,
+            out Vector2 minMax)
         {
-            maxMin = Vector2.zero;
+            minMax = Vector2.zero;
             bool b = false;
             Bounds bounds = new Bounds();
 
@@ -83,8 +83,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             float c2bDis = Vector3.Dot(fwd, c2b);
             float bs = bounds.extents.magnitude;
             
-            maxMin.x = c2bDis + bs;
-            maxMin.y = Mathf.Max(0, c2bDis - bs);
+            minMax.x = Mathf.Max(0, c2bDis - bs);
+            minMax.y = c2bDis + bs;
 
             return true;
         }
@@ -104,7 +104,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             SampleCount samples,
             RenderingData renderingData)
         {
-            if (!GetViewZMaxMinWithRenderQueue(renderingData.cameraData.camera, RenderQueueUtils.oit, out _ViewZMaxMin))
+            if (!GetViewDepthMinMaxWithRenderQueue(renderingData.cameraData.camera, RenderQueueUtils.oit, out _ViewDepthMinMax))
             {
                 return false;
             }
@@ -265,7 +265,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
-                cmd.SetGlobalVector("_ViewZMaxMin", _ViewZMaxMin);
+                Vector2 logViewDepthMinMax = new Vector2(Mathf.Log(_ViewDepthMinMax.x), Mathf.Log(_ViewDepthMinMax.y));
+                cmd.SetGlobalVector("_LogViewDepthMinMax", logViewDepthMinMax);
 
                 Camera camera = renderingData.cameraData.camera;
                 var drawSettings = CreateDrawRendererSettings(camera, SortFlags.None, _RendererConfiguration, renderingData.supportsDynamicBatching);
