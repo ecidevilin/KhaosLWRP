@@ -294,5 +294,55 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             return true;
         }
+
+        //public static bool GetVPMatrixWithRenderQueue(Light light, RenderQueueRange range, 
+        //    out Matrix4x4 viewMatrix, out Matrix4x4 projMatrix, out Vector4 cullingSphere,
+        //    bool checkShadowCastingMode)
+        //{
+        //    viewMatrix = Matrix4x4.identity;
+        //    projMatrix = Matrix4x4.identity;
+        //    cullingSphere = Vector4.zero;
+        //    bool b = false;
+        //    Bounds bounds = new Bounds();
+
+        //    Renderer[] coms = Renderer.FindObjectsOfType<Renderer>();
+            
+        //    if (null == coms || 0 == coms.Length)
+        //    {
+        //        return false;
+        //    }
+        //    foreach (var p in coms)
+        //    {
+        //        Renderer r = p.GetComponent<Renderer>();
+        //        if (null != r && r.enabled && 
+        //            (!checkShadowCastingMode || (checkShadowCastingMode && r.shadowCastingMode != ShadowCastingMode.Off))
+        //            && r.sharedMaterial.renderQueue >= range.min && r.sharedMaterial.renderQueue <= range.max)
+        //        {
+        //            if (r is SkinnedMeshRenderer)
+        //            {
+        //                (r as SkinnedMeshRenderer).sharedMesh.RecalculateBounds();
+        //            }
+        //            Bounds rb = r.bounds;
+        //            if (b)
+        //            {
+        //                bounds.Encapsulate(rb);
+        //            }
+        //            else
+        //            {
+        //                bounds = rb;
+        //                b = true;
+        //            }
+        //        }
+        //    }
+        //    if (!b)
+        //    {
+        //        return false;
+        //    }
+
+        //    GetVPMatrixWithWorldBounds(light, bounds, out viewMatrix, out projMatrix, out cullingSphere);
+
+        //    return true;
+        //}
+
     }
 }

@@ -281,8 +281,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             //renderer.EnqueuePass(_RenderWeightedOITForwardPass);
             if (supportsOIT)
             {
-                _RenderMomentOITForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, rendererConfiguration, sampleCount, renderingData.cameraData.momentsCount);
-                renderer.EnqueuePass(_RenderMomentOITForwardPass);
+                if (_RenderMomentOITForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, rendererConfiguration, sampleCount, renderingData))
+                {
+                    renderer.EnqueuePass(_RenderMomentOITForwardPass);
+                }
             }
 
             m_RenderTransparentForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, rendererConfiguration);

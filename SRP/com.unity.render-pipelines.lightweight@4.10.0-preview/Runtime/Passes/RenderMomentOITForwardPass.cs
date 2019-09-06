@@ -25,6 +25,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         RendererConfiguration _RendererConfiguration;
 
+        Vector2 _ViewZMaxMin;
+
         public RenderMomentOITForwardPass()
         {
             RegisterShaderPassName("GenerateMoments");
@@ -36,6 +38,57 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         MomentsCount _MomentsCount;
 
+        public static bool GetViewZMaxMinWithRenderQueue(Camera camera, RenderQueueRange range,
+            out Vector2 maxMin)
+        {
+            maxMin = Vector2.zero;
+            bool b = false;
+            Bounds bounds = new Bounds();
+
+            Renderer[] coms = Renderer.FindObjectsOfType<Renderer>();
+
+            if (null == coms || 0 == coms.Length)
+            {
+                return false;
+            }
+            foreach (var p in coms)
+            {
+                Renderer r = p.GetComponent<Renderer>();
+                if (null != r && r.enabled
+                    && r.sharedMaterial.renderQueue >= range.min && r.sharedMaterial.renderQueue <= range.max)
+                {
+                    if (r is SkinnedMeshRenderer)
+                    {
+                        (r as SkinnedMeshRenderer).sharedMesh.RecalculateBounds();
+                    }
+                    Bounds rb = r.bounds;
+                    if (b)
+                    {
+                        bounds.Encapsulate(rb);
+                    }
+                    else
+                    {
+                        bounds = rb;
+                        b = true;
+                    }
+                }
+            }
+            if (!b)
+            {
+                return false;
+            }
+
+            Vector3 fwd = camera.transform.forward;
+            Vector3 c2b = bounds.center - camera.transform.position;
+            float c2bDis = Vector3.Dot(fwd, c2b);
+            float bs = bounds.extents.magnitude;
+            
+            maxMin.x = c2bDis + bs;
+            maxMin.y = Mathf.Max(0, c2bDis - bs);
+
+            return true;
+        }
+
         /// <summary>
         /// Configure the pass before execution
         /// </summary>
@@ -43,14 +96,18 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         /// <param name="colorAttachmentHandle">Color attachment to render into</param>
         /// <param name="depthAttachmentHandle">Depth attachment to render into</param>
         /// <param name="configuration">Specific render configuration</param>
-        public void Setup(
+        public bool Setup(
             RenderTextureDescriptor baseDescriptor,
             RenderTargetHandle colorAttachmentHandle,
             RenderTargetHandle depthAttachmentHandle,
             RendererConfiguration configuration,
             SampleCount samples,
-            int momentsCount)
+            RenderingData renderingData)
         {
+            if (!GetViewZMaxMinWithRenderQueue(renderingData.cameraData.camera, RenderQueueUtils.oit, out _ViewZMaxMin))
+            {
+                return false;
+            }
             this._ColorAttachmentHandle = colorAttachmentHandle;
             this._DepthAttachmentHandle = depthAttachmentHandle;
             _RendererConfiguration = configuration;
@@ -77,7 +134,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             _B1Handle.Init("_B1");
             _B2Handle.Init("_B2");
 
-            _MomentsCount = (MomentsCount)momentsCount;
+            _MomentsCount = (MomentsCount)renderingData.cameraData.momentsCount;
 
             if (MomentsCount._8 == _MomentsCount)
             {
@@ -149,6 +206,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 RenderBufferLoadAction.Load,
                 RenderBufferStoreAction.DontCare
                 );
+            return true;
         }
 
 
@@ -206,6 +264,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
+
+                cmd.SetGlobalVector("_ViewZMaxMin", _ViewZMaxMin);
 
                 Camera camera = renderingData.cameraData.camera;
                 var drawSettings = CreateDrawRendererSettings(camera, SortFlags.None, _RendererConfiguration, renderingData.supportsDynamicBatching);

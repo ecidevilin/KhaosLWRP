@@ -34,9 +34,10 @@ Shader "Lightweight Render Pipeline/MOITLit"
         Tags{"RenderType" = "Transparent" "IgnoreProjector" = "True" "PreviewType" = "Plane" "PerformanceChecks" = "False" "RenderPipeline" = "LightweightPipeline" }
 
 		HLSLINCLUDE
+		float2 _ViewZMaxMin;
 		float WarpDepth(float vd)
 		{
-			return (log(vd) - log(0.3f)) / (log(1) - log(0.3f)) * 2 - 1;
+			return (log(vd) - log(_ViewZMaxMin.y)) / (log(_ViewZMaxMin.x) - log(_ViewZMaxMin.y)) * 2 - 1;
 		}
 		ENDHLSL
 		Pass
@@ -45,7 +46,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			Tags {"LightMode" = "GenerateMoments"}
 			Blend One One
 			ZWrite Off
-			Cull [_Cull]
+			Cull[_Cull]
 			HLSLPROGRAM
 			#pragma exclude_renderers d3d11_9x gles
 			#pragma vertex LitPassVertex
@@ -54,6 +55,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			#pragma shader_feature _MOMENT4 _MOMENT8
 			#include "LitInput.hlsl"
 			#include "LitForwardPass.hlsl"
+
 			struct Output
 			{
 				float b0 : COLOR0;
@@ -469,7 +471,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 				return half4(color, alpha);
 			}
 
-			Output MOITLitFragment(Varyings input) : SV_Target
+			Output MOITLitFragment(Varyings input)
 			{
 				Output o;
 
