@@ -21,5 +21,7 @@ MonoBehaviour:
     type: 3}
   _GaussianBlurShader: {fileID: 4800000, guid: 6befcbf6968d86646a6c9f484e600db8, type: 3}
   _OITCompositeShader: {fileID: 4800000, guid: 4a52bd06fc9f5ad4d945ea27841bc439, type: 3}
+  _MomentOITCompositeShader: {fileID: 4800000, guid: e814fbe6f62471f4082db3bf5b919473,
+    type: 3}
   _ResetDeepShadowDataCompute: {fileID: 7200000, guid: 17cd55a304520304a95f4e2d8d47f262,
     type: 3}

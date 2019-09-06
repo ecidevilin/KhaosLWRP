@@ -17,6 +17,8 @@ MonoBehaviour:
   m_RequireOpaqueTexture: 0
   m_OpaqueDownsampling: 1
   m_RequireDepthNormalsTexture: 1
+  _supportsOIT: 1
+  _momentsCount: 8
   m_SupportsHDR: 1
   m_MSAA: 1
   m_RenderScale: 1
