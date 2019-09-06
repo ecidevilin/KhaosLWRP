@@ -38,6 +38,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         }
 
         MomentsCount _MomentsCount;
+        public FloatPrecision _MomentsPrecision;
 
         public static bool GetViewDepthMinMaxWithRenderQueue(Camera camera, RenderQueueRange range,
             out Vector2 minMax)
@@ -123,18 +124,38 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             _Descriptor = baseDescriptor;
 
-            baseDescriptor.colorFormat = RenderTextureFormat.ARGBFloat;
-            _DescriptorFloat4 = baseDescriptor;
+            _MomentsPrecision = renderingData.cameraData.momentsPrecision;
 
-            baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat)
-                ? RenderTextureFormat.RGFloat
-                : RenderTextureFormat.ARGBFloat;
-            _DescriptorFloat2 = baseDescriptor;
+            if (_MomentsPrecision == FloatPrecision._Single)
+            {
+                baseDescriptor.colorFormat = RenderTextureFormat.ARGBFloat;
+                _DescriptorFloat4 = baseDescriptor;
 
-            baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RFloat)
-                ? RenderTextureFormat.RFloat
-                : RenderTextureFormat.ARGBFloat;
-            _DescriptorFloat = baseDescriptor;
+                baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat)
+                    ? RenderTextureFormat.RGFloat
+                    : RenderTextureFormat.ARGBFloat;
+                _DescriptorFloat2 = baseDescriptor;
+
+                baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RFloat)
+                    ? RenderTextureFormat.RFloat
+                    : RenderTextureFormat.ARGBFloat;
+                _DescriptorFloat = baseDescriptor;
+            }
+            else
+            {
+                baseDescriptor.colorFormat = RenderTextureFormat.ARGBHalf;
+                _DescriptorFloat4 = baseDescriptor;
+
+                baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGHalf)
+                    ? RenderTextureFormat.RGHalf
+                    : RenderTextureFormat.ARGBHalf;
+                _DescriptorFloat2 = baseDescriptor;
+
+                baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RHalf)
+                    ? RenderTextureFormat.RHalf
+                    : RenderTextureFormat.ARGBHalf;
+                _DescriptorFloat = baseDescriptor;
+            }
 
             _B0Handle.Init("_B0");
             _B1Handle.Init("_B1");
@@ -269,6 +290,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 }
                 CoreUtils.SetKeyword(cmd, "_MOMENT6", MomentsCount._6 == _MomentsCount);
                 CoreUtils.SetKeyword(cmd, "_MOMENT8", MomentsCount._8 == _MomentsCount);
+                CoreUtils.SetKeyword(cmd, "_MOMENT_HALF_PRECISION", FloatPrecision._Half == _MomentsPrecision);
 
                 cmd.SetRenderTarget(_GMBinding);
                 cmd.ClearRenderTarget(false, true, Color.black);

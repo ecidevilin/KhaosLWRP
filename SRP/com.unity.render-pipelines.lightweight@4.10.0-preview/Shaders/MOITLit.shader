@@ -124,21 +124,32 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			#pragma shader_feature _FADING_ON
 			#pragma shader_feature _REQUIRE_UV2
 			#pragma shader_feature _MOMENT4 _MOMENT6 _MOMENT8
+			#pragma shader_feature _MOMENT_HALF_PRECISION _MOMENT_SINGLE_PRECISION
 			#pragma multi_compile _ _DEEP_SHADOW_MAPS
 			#include "LitInput.hlsl"
 			#include "LitForwardPass.hlsl"
 			#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/MomentMath.hlsl"
-
+#ifdef _MOMENT_SINGLE_PRECISION
 			TEXTURE2D_FLOAT(_b0);
-			SAMPLER(sampler_b0);
 			TEXTURE2D_FLOAT(_b1);
-			SAMPLER(sampler_b1);
 
-			float4 _b0_TexelSize;
 #if defined(_MOMENT8) || defined(_MOMENT6)
 			TEXTURE2D_FLOAT(_b2);
+#endif
+#else
+			TEXTURE2D_HALF(_b0);
+			TEXTURE2D_HALF(_b1);
+
+#if defined(_MOMENT8) || defined(_MOMENT6)
+			TEXTURE2D_HALF(_b2);
+#endif
+#endif
+			SAMPLER(sampler_b0);
+			SAMPLER(sampler_b1);
+#if defined(_MOMENT8) || defined(_MOMENT6)
 			SAMPLER(sampler_b2);
 #endif
+			float4 _b0_TexelSize;
 			float _MomentBias;
 			float _Overestimation;
 

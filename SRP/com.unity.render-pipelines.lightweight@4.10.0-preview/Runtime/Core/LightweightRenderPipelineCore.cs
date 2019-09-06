@@ -54,6 +54,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         public bool supportsOIT;
         public int momentsCount;
+        public FloatPrecision momentsPrecision;
     }
 
     public struct ShadowData

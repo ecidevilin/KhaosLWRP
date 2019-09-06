@@ -60,6 +60,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public bool supportsCameraDepthNormalsTexture { get; private set; }
             public bool supportsOIT { get; private set; }
             public int momentsCount { get; private set; }
+            public FloatPrecision momentsPrecision { get; private set; }
             public bool supportsHDR { get; private set; }
             public int msaaSampleCount { get; private set; }
             public float renderScale { get; private set; }
@@ -97,6 +98,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
                 cache.supportsOIT = asset.supportsOIT;
                 cache.momentsCount = asset.momentsCount;
+                cache.momentsPrecision = asset.momentsPrecision;
 
                 // Quality settings
                 cache.msaaSampleCount = asset.msaaSampleCount;
@@ -334,6 +336,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             cameraData.supportsOIT = settings.supportsOIT;
             cameraData.momentsCount = settings.momentsCount;
+            cameraData.momentsPrecision = settings.momentsPrecision;
         }
 
         static void InitializeRenderingData(PipelineSettings settings, ref CameraData cameraData, ref CullResults cullResults,

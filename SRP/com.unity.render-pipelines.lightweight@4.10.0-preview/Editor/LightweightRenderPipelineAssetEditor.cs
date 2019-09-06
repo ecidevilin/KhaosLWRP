@@ -22,7 +22,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static GUIContent requireDepthNormalTextureText = EditorGUIUtility.TrTextContent("Depth Normals Texture", "If enabled the pipeline will generate view-space normals and camera's depth that can be bound in shaders as _CameraDepthNormalsTexture.");
 
             public static GUIContent supportsOITText = EditorGUIUtility.TrTextContent("Order Independent Transparency", "If enabled the pipeline will draw the transparent objects (Render queue > 4500) unsortly.");
-            public static GUIContent momentsCountText = EditorGUIUtility.TrTextContent("Moments Count", "Larger number means more accuracy");
+            public static GUIContent momentsCountText = EditorGUIUtility.TrTextContent("Moments Count", "Larger number means more accuracy but more memory cost");
+            public static GUIContent momentsPrecisionText = EditorGUIUtility.TrTextContent("Moments Precision", "Larger number means more accuracy but more memory cost");
 
             // Quality
             public static GUIContent hdrText = EditorGUIUtility.TrTextContent("HDR", "Controls the global HDR settings.");
@@ -84,6 +85,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         SerializedProperty _SupportsOITProp;
         SerializedProperty _MomentsCountProp;
+        SerializedProperty _MomentsPrecisionProp;
 
         SerializedProperty m_HDR;
         SerializedProperty m_MSAA;
@@ -144,6 +146,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             _SupportsOITProp = serializedObject.FindProperty("_supportsOIT");
             _MomentsCountProp = serializedObject.FindProperty("_momentsCount");
+            _MomentsPrecisionProp = serializedObject.FindProperty("_momentsPrecision");
 
             m_HDR = serializedObject.FindProperty("m_SupportsHDR");
             m_MSAA = serializedObject.FindProperty("m_MSAA");
@@ -196,7 +199,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 EditorGUILayout.PropertyField(_SupportsOITProp, Styles.supportsOITText);
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginDisabledGroup(!_SupportsOITProp.boolValue);
-                EditorGUILayout.PropertyField(_MomentsCountProp, Styles.opaqueDownsamplingText);
+                EditorGUILayout.PropertyField(_MomentsCountProp, Styles.momentsCountText);
+                EditorGUILayout.PropertyField(_MomentsPrecisionProp, Styles.momentsPrecisionText);
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.indentLevel--;
                 EditorGUI.indentLevel--;

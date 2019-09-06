@@ -19,6 +19,7 @@ MonoBehaviour:
   m_RequireDepthNormalsTexture: 1
   _supportsOIT: 1
   _momentsCount: 8
+  _momentsPrecision: 32
   m_SupportsHDR: 1
   m_MSAA: 1
   m_RenderScale: 1

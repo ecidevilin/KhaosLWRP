@@ -93,6 +93,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         _8 = 8,
     }
 
+    public enum FloatPrecision
+    {
+        _Half = 16,
+        _Single = 32,
+    }
+
     public class LightweightRenderPipelineAsset : RenderPipelineAsset, ISerializationCallbackReceiver
     {
         Shader m_DefaultShader;
@@ -108,6 +114,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         [SerializeField] bool _supportsOIT = false;
         [SerializeField] MomentsCount _momentsCount = MomentsCount._4;
+        [SerializeField] FloatPrecision _momentsPrecision = FloatPrecision._Half;
 
         // Quality settings
         [SerializeField] bool m_SupportsHDR = false;
@@ -298,6 +305,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public int momentsCount
         {
             get { return (int)_momentsCount; }
+        }
+
+        public FloatPrecision momentsPrecision
+        {
+            get { return _momentsPrecision; }
         }
 
         public bool supportsHDR
