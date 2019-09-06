@@ -89,6 +89,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
     public enum MomentsCount
     {
         _4 = 4,
+        _6 = 6,
         _8 = 8,
     }
 

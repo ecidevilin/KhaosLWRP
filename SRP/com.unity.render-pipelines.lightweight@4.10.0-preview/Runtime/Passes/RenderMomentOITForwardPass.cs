@@ -21,6 +21,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         RenderTextureDescriptor _Descriptor { get; set; }
         RenderTextureDescriptor _DescriptorFloat { get; set; }
+        RenderTextureDescriptor _DescriptorFloat2 { get; set; }
         RenderTextureDescriptor _DescriptorFloat4 { get; set; }
 
         RendererConfiguration _RendererConfiguration;
@@ -125,6 +126,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             baseDescriptor.colorFormat = RenderTextureFormat.ARGBFloat;
             _DescriptorFloat4 = baseDescriptor;
 
+            baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat)
+                ? RenderTextureFormat.RGFloat
+                : RenderTextureFormat.ARGBFloat;
+            _DescriptorFloat2 = baseDescriptor;
+
             baseDescriptor.colorFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RFloat)
                 ? RenderTextureFormat.RFloat
                 : RenderTextureFormat.ARGBFloat;
@@ -136,7 +142,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             _MomentsCount = (MomentsCount)renderingData.cameraData.momentsCount;
 
-            if (MomentsCount._8 == _MomentsCount)
+            if (MomentsCount._4 != _MomentsCount)
             {
                 _GMBinding = new RenderTargetBinding(
                 new RenderTargetIdentifier[]
@@ -257,6 +263,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 {
                     cmd.GetTemporaryRT(_B2Handle.id, _DescriptorFloat4);
                 }
+                else if (MomentsCount._6 == _MomentsCount)
+                {
+                    cmd.GetTemporaryRT(_B2Handle.id, _DescriptorFloat2);
+                }
+                CoreUtils.SetKeyword(cmd, "_MOMENT6", MomentsCount._6 == _MomentsCount);
                 CoreUtils.SetKeyword(cmd, "_MOMENT8", MomentsCount._8 == _MomentsCount);
 
                 cmd.SetRenderTarget(_GMBinding);
@@ -279,15 +290,28 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cmd.Clear();
 
                 cmd.GetTemporaryRT(_MOITHandle.id, _Descriptor);
-                cmd.GetTemporaryRT(_GIALHandle.id, _Descriptor);
-                cmd.SetRenderTarget(_RMBinding);
-                cmd.ClearRenderTarget(false, true, Color.black);
+                if (renderingData.shadowData.supportsDeepShadowMaps)
+                {
+                    cmd.GetTemporaryRT(_GIALHandle.id, _Descriptor);
+                    cmd.SetRenderTarget(_RMBinding);
+                    cmd.ClearRenderTarget(false, true, Color.black);
+                }
+                else
+                {
+                    CoreUtils.SetRenderTarget(cmd,
+                        _MOITHandle.Identifier(), RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                        _DepthAttachmentHandle.Identifier(), RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare,
+                        ClearFlag.Color, Color.black);
+                }
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
                 cmd.SetGlobalTexture("_b0", _B0Handle.id);
                 cmd.SetGlobalTexture("_b1", _B1Handle.id);
-                cmd.SetGlobalTexture("_b2", _B2Handle.id);
+                if (MomentsCount._4 != _MomentsCount)
+                {
+                    cmd.SetGlobalTexture("_b2", _B2Handle.id);
+                }
 
                 drawSettings.SetShaderPassName(0, new ShaderPassName("ResolveMoments"));
                 context.DrawRenderers(renderingData.cullResults.visibleRenderers, ref drawSettings, _OITFilterSettings);
