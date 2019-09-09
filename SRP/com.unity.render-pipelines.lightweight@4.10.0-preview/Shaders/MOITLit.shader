@@ -9,6 +9,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
         _MainTex("Albedo", 2D) = "white" {}
         _Color("Color", Color) = (1,1,1,1)
 
+		//NOTE: For DepthOnly & ShadowCaster
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         _MetallicGlossMap("Metallic", 2D) = "white" {}
@@ -18,26 +19,25 @@ Shader "Lightweight Render Pipeline/MOITLit"
         _BumpScale("Scale", Float) = 1.0
         _BumpMap("Normal Map", 2D) = "bump" {}
 
-        _EmissionColor("Color", Color) = (0,0,0)
-        _EmissionMap("Emission", 2D) = "white" {}
+		[Enum(Off, 0, Front, 1, Back, 2)]
+		_Cull("Cull", Float) = 2.0
 
         // Hidden properties
-        [HideInInspector] _Mode("__mode", Float) = 0.0
-        [HideInInspector] _FlipbookMode("__flipbookmode", Float) = 0.0
-        [HideInInspector] _LightingEnabled("__lightingenabled", Float) = 1.0
+		//TODO: Editor
         [HideInInspector] _EmissionEnabled("__emissionenabled", Float) = 0.0
-        [HideInInspector] _Cull("__cull", Float) = 2.0
+		[HideInInspector] _EmissionColor("Color", Color) = (0,0,0)
+		[HideInInspector] _EmissionMap("Emission", 2D) = "white" {}
     }
 
     SubShader
     {
-        Tags{"RenderType" = "Transparent" "IgnoreProjector" = "True" "PreviewType" = "Plane" "PerformanceChecks" = "False" "RenderPipeline" = "LightweightPipeline" }
+        Tags{"RenderType" = "Transparent" "IgnoreProjector" = "True" "PreviewType" = "Plane" "PerformanceChecks" = "False" "RenderPipeline" = "LightweightPipeline"  "Queue" = "Transparent+2000"}
 
 		HLSLINCLUDE
 		float2 _LogViewDepthMinDelta;
 		float WarpDepth(float vd)
 		{
-			return (log(vd) - _LogViewDepthMinDelta.x) / _LogViewDepthMinDelta.y * 2 - 1;
+			return (log(vd) - _LogViewDepthMinDelta.x) / _LogViewDepthMinDelta.y;// *2 - 1;
 		}
 		ENDHLSL
 		Pass
@@ -243,7 +243,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 				InputData inputData;
 				InitializeInputData(input, surfaceData.normalTS, inputData);
 
-				float tt, td;
+				float td, tt;
 				ResolveMoments(td, tt, input.positionCS.w, input.positionCS.xy * _B0_TexelSize.xy);
 
 #ifdef _DEEP_SHADOW_MAPS
@@ -339,5 +339,5 @@ Shader "Lightweight Render Pipeline/MOITLit"
     }
 	
 	FallBack "Hidden/InternalErrorShader"
-    //CustomEditor "UnityEditor.Experimental.Rendering.LightweightPipeline.ParticlesLitShaderGUI"
+    //CustomEditor "UnityEditor.Experimental.Rendering.LightweightPipeline.MomentOITLitShaderGUI"
 }
