@@ -78,6 +78,7 @@ Shader "Hidden/Lightweight Render Pipeline/MOITComposite"
 				moit.rgb /= moit.a;
 
 				float b0 = SAMPLE_TEXTURE2D(_b0, sampler_b0, input.uv.xy).r;
+
 				return half4(moit.rgb, exp(-b0));
             }
             ENDHLSL

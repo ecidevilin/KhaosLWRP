@@ -34,10 +34,10 @@ Shader "Lightweight Render Pipeline/MOITLit"
         Tags{"RenderType" = "Transparent" "IgnoreProjector" = "True" "PreviewType" = "Plane" "PerformanceChecks" = "False" "RenderPipeline" = "LightweightPipeline" }
 
 		HLSLINCLUDE
-		float2 _LogViewDepthMinMax;
+		float2 _LogViewDepthMinDelta;
 		float WarpDepth(float vd)
 		{
-			return (log(vd) - _LogViewDepthMinMax.x) / (_LogViewDepthMinMax.y - _LogViewDepthMinMax.x) * 2 - 1;
+			return (log(vd) - _LogViewDepthMinDelta.x) / _LogViewDepthMinDelta.y * 2 - 1;
 		}
 		ENDHLSL
 		Pass
@@ -130,26 +130,26 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			#include "LitForwardPass.hlsl"
 			#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/MomentMath.hlsl"
 #ifdef _MOMENT_SINGLE_PRECISION
-			TEXTURE2D_FLOAT(_b0);
-			TEXTURE2D_FLOAT(_b1);
+			TEXTURE2D_FLOAT(_B0);
+			TEXTURE2D_FLOAT(_B1);
 
 #if defined(_MOMENT8) || defined(_MOMENT6)
 			TEXTURE2D_FLOAT(_b2);
 #endif
 #else
-			TEXTURE2D_HALF(_b0);
-			TEXTURE2D_HALF(_b1);
+			TEXTURE2D_HALF(_B0);
+			TEXTURE2D_HALF(_B1);
 
 #if defined(_MOMENT8) || defined(_MOMENT6)
-			TEXTURE2D_HALF(_b2);
+			TEXTURE2D_HALF(_B2);
 #endif
 #endif
-			SAMPLER(sampler_b0);
-			SAMPLER(sampler_b1);
+			SAMPLER(sampler_B0);
+			SAMPLER(sampler_B1);
 #if defined(_MOMENT8) || defined(_MOMENT6)
-			SAMPLER(sampler_b2);
+			SAMPLER(sampler_B2);
 #endif
-			float4 _b0_TexelSize;
+			float4 _B0_TexelSize;
 			float _MomentBias;
 			float _Overestimation;
 
@@ -159,15 +159,15 @@ Shader "Lightweight Render Pipeline/MOITLit"
 				float d = WarpDepth(vd);
 				td = 1;
 				tt = 1;
-				float b0 = SAMPLE_TEXTURE2D(_b0, sampler_b0, p).r;
+				float b0 = SAMPLE_TEXTURE2D(_B0, sampler_B0, p).r;
 				//clip(b0 - 0.001);
 				tt = exp(-b0);
 
 
-				float4 b1 = SAMPLE_TEXTURE2D(_b1, sampler_b1, p);
+				float4 b1 = SAMPLE_TEXTURE2D(_B1, sampler_B1, p);
 				b1 /= b0;
 #ifdef _MOMENT8
-				float4 b2 = SAMPLE_TEXTURE2D(_b2, sampler_b2, p);
+				float4 b2 = SAMPLE_TEXTURE2D(_B2, sampler_B2, p);
 				b2 /= b0;
 				float4 be = float4(b1.yw, b2.yw);
 				float4 bo = float4(b1.xz, b2.xz);
@@ -175,7 +175,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 				const float bias[8] = { 0, 0.75, 0, 0.67666666666666664, 0, 0.64, 0, 0.60030303030303034 };
 				td = ComputeTransmittance(b0, be, bo, d, _MomentBias, _Overestimation, bias);
 #elif defined(_MOMENT6)
-				float2 b2 = SAMPLE_TEXTURE2D(_b2, sampler_b2, p).rg;
+				float2 b2 = SAMPLE_TEXTURE2D(_B2, sampler_B2, p).rg;
 				float3 be = float3(b1.yw, b2.y);
 				float3 bo = float3(b1.xz, b2.x);
 
@@ -244,7 +244,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 				InitializeInputData(input, surfaceData.normalTS, inputData);
 
 				float tt, td;
-				ResolveMoments(td, tt, input.positionCS.w, input.positionCS.xy * _b0_TexelSize.xy);
+				ResolveMoments(td, tt, input.positionCS.w, input.positionCS.xy * _B0_TexelSize.xy);
 
 #ifdef _DEEP_SHADOW_MAPS
 				half3 gial;

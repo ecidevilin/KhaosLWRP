@@ -298,8 +298,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
-                Vector2 logViewDepthMinMax = new Vector2(Mathf.Log(_ViewDepthMinMax.x), Mathf.Log(_ViewDepthMinMax.y));
-                cmd.SetGlobalVector("_LogViewDepthMinMax", logViewDepthMinMax);
+                Vector2 logViewDepthMinDelta = new Vector2(Mathf.Log(_ViewDepthMinMax.x), Mathf.Log(_ViewDepthMinMax.y));
+                logViewDepthMinDelta.y = logViewDepthMinDelta.y - logViewDepthMinDelta.x;
+                cmd.SetGlobalVector("_LogViewDepthMinDelta", logViewDepthMinDelta);
 
                 Camera camera = renderingData.cameraData.camera;
                 var drawSettings = CreateDrawRendererSettings(camera, SortFlags.None, _RendererConfiguration, renderingData.supportsDynamicBatching);
