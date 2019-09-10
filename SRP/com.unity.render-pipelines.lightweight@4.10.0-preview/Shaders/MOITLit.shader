@@ -22,6 +22,9 @@ Shader "Lightweight Render Pipeline/MOITLit"
 		[Enum(Off, 0, Front, 1, Back, 2)]
 		_Cull("Cull", Float) = 2.0
 
+		_Overestimation("Overestimation", Range(0,1)) = 0.25
+		_MomentBias("Moment Bias", Range(0, 1)) = 0
+
         // Hidden properties
 		//TODO: Editor
         [HideInInspector] _EmissionEnabled("__emissionenabled", Float) = 0.0

@@ -173,9 +173,6 @@ float ComputeTransmittance(float b_0, float2 b_even, float2 b_odd, float depth, 
 	z[1] = -p * 0.5f - r;
 	z[2] = -p * 0.5f + r;
 	// Compute the absorbance by summing the appropriate weights
-	// |1 z0 z0*z0| |p0| |f0|
-	// |1 z1 z1*z1|*|p1|=|f1|
-	// |1 z2 z2*z2| |p2| |f2|
 	float3 polynomial;
 	float3 weight_factor = float3(overestimation, (z[1] < z[0]) ? 1.0f : 0.0f, (z[2] < z[0]) ? 1.0f : 0.0f);
 	float f0 = weight_factor[0];
