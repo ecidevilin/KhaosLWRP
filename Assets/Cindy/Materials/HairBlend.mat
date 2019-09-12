@@ -9,7 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: HairBlend
   m_Shader: {fileID: 4800000, guid: ee8d1c5c36e125446af7ab708006b34e, type: 3}
-  m_ShaderKeywords: _METALLICSPECGLOSSMAP _NORMALMAP _SPECGLOSSMAP _SPECULAR_SETUP
+  m_ShaderKeywords: _ALPHABLEND_ON _METALLICSPECGLOSSMAP _NORMALMAP _SPECGLOSSMAP
+    _SPECULAR_SETUP
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -71,31 +72,34 @@ Material:
     - _Cull: 2
     - _Cutoff: 0.25
     - _DetailNormalMapScale: 1
-    - _DstBlend: 0
+    - _DstBlend: 10
     - _EmissionEnabled: 0
     - _FlipbookMode: 0
     - _GlossMapScale: 0
     - _Glossiness: 0.6
+    - _GlossinessSource: 0
     - _GlossyReflections: 1
     - _InverseCutout: 1
     - _LightingEnabled: 1
     - _Metallic: 0
-    - _Mode: 3
+    - _Mode: 2
     - _MomentBias: 0
     - _OcclusionStrength: 1
-    - _Overestimation: 0.622
+    - _Overestimation: 0.25
     - _Parallax: 0.02
     - _ReceiveShadows: 1
+    - _Shininess: 1
     - _SmoothnessTextureChannel: 0
     - _SoftParticlesEnabled: 0
     - _SoftParticlesFarFadeDistance: 1
     - _SoftParticlesNearFadeDistance: 0
+    - _SpecSource: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _Surface: 1
     - _UVSec: 0
     - _WorkflowMode: 0
-    - _ZWrite: 1
+    - _ZWrite: 0
     m_Colors:
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

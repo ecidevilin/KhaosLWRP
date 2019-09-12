@@ -40,10 +40,10 @@ Shader "Lightweight Render Pipeline/MOITLit"
 		float2 _LogViewDepthMinDelta;
 		float WarpDepth(float vd)
 		{
-			return (log(vd) - _LogViewDepthMinDelta.x) / _LogViewDepthMinDelta.y;// *2 - 1;
+			return (log(vd) - _LogViewDepthMinDelta.x) / _LogViewDepthMinDelta.y *2 - 1;
 		}
 		ENDHLSL
-		Pass
+			Pass
 		{
 			Name "GenerateMoments"
 			Tags {"LightMode" = "GenerateMoments"}
@@ -56,8 +56,15 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			#pragma fragment MomentFragment
 			#pragma target 3.0
 			#pragma shader_feature _MOMENT4 _MOMENT6 _MOMENT8
+			#pragma multi_compile _ _TRIGONOMETRIC
 			#include "LitInput.hlsl"
 			#include "LitForwardPass.hlsl"
+
+			float4 _WrappingZoneParameters;
+			/*! This function implements complex multiplication.*/
+			float2 Multiply(float2 LHS, float2 RHS) {
+				return float2(LHS.x*RHS.x - LHS.y*RHS.y, LHS.x*RHS.y + LHS.y*RHS.x);
+			}
 
 			struct Output
 			{
@@ -77,10 +84,22 @@ Shader "Lightweight Render Pipeline/MOITLit"
 #endif
 			)
 			{
-				float d = WarpDepth(vd);
 				float a = -log(t);
+				float d = WarpDepth(vd);
 
 				b0 = a;
+#ifdef _TRIGONOMETRIC
+				float p = mad(d, _WrappingZoneParameters.y, _WrappingZoneParameters.y);
+				float2 c;
+				sincos(p, c.y, c.x);
+				float2 c2 = Multiply(c, c);
+				b1 = float4(c, c2) * a;
+#ifdef _MOMENT8
+				b2 = float4(Multiply(c, c2), Multiply(c2, c2)) * a;
+#elif defined(_MOMENT6)
+				b2 = Multiply(c, c2) * a;
+#endif
+#else
 				float d2 = d * d;
 				float d4 = d2 * d2;
 				b1 = float4(d, d2, d2 * d, d4) * a;
@@ -89,13 +108,14 @@ Shader "Lightweight Render Pipeline/MOITLit"
 #elif defined(_MOMENT6)
 				b2 = b1.xy * d4;
 #endif
+#endif
 			}
 
 			Output MomentFragment(Varyings input)
 			{
 				Output o;
 				half alpha = SampleAlbedoAlpha(input.uv.xy, TEXTURE2D_PARAM(_MainTex, sampler_MainTex)).a * _Color.a;
-				GenerateMoments(input.positionCS.w, 1 - alpha, o.b0, o.b1
+				GenerateMoments(input.positionCS.z, 1 - alpha, o.b0, o.b1
 #ifdef _MOMENT8
 					, o.b2
 #elif defined(_MOMENT6)
@@ -127,11 +147,13 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			#pragma shader_feature _FADING_ON
 			#pragma shader_feature _REQUIRE_UV2
 			#pragma shader_feature _MOMENT4 _MOMENT6 _MOMENT8
+			#pragma multi_compile _ _TRIGONOMETRIC
 			#pragma shader_feature _MOMENT_HALF_PRECISION _MOMENT_SINGLE_PRECISION
 			#pragma multi_compile _ _DEEP_SHADOW_MAPS
 			#include "LitInput.hlsl"
 			#include "LitForwardPass.hlsl"
 			#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/MomentMath.hlsl"
+			#include "Packages/com.unity.render-pipelines.lightweight/ShaderLibrary/TrigonometricMomentMath.hlsl"
 #ifdef _MOMENT_SINGLE_PRECISION
 			TEXTURE2D_FLOAT(_B0);
 			TEXTURE2D_FLOAT(_B1);
@@ -155,6 +177,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			float4 _B0_TexelSize;
 			float _MomentBias;
 			float _Overestimation;
+			float4 _WrappingZoneParameters;
 
 
 			void ResolveMoments(out float td, out float tt, float vd, float2 p)
@@ -172,24 +195,49 @@ Shader "Lightweight Render Pipeline/MOITLit"
 #ifdef _MOMENT8
 				float4 b2 = SAMPLE_TEXTURE2D(_B2, sampler_B2, p);
 				b2 /= b0;
+#ifdef _TRIGONOMETRIC
+				float2 tb[4];
+				tb[0] = b1.xy;
+				tb[1] = b1.zw;
+				tb[2] = b2.xy;
+				tb[3] = b2.zw;
+				td = ComputeTransmittanceTrigonometric(b0, tb, d, _MomentBias, _Overestimation, _WrappingZoneParameters);
+#else
 				float4 be = float4(b1.yw, b2.yw);
 				float4 bo = float4(b1.xz, b2.xz);
 
 				const float bias[8] = { 0, 0.75, 0, 0.67666666666666664, 0, 0.64, 0, 0.60030303030303034 };
 				td = ComputeTransmittance(b0, be, bo, d, _MomentBias, _Overestimation, bias);
+#endif
 #elif defined(_MOMENT6)
 				float2 b2 = SAMPLE_TEXTURE2D(_B2, sampler_B2, p).rg;
+				b2 /= b0;
+#ifdef _TRIGONOMETRIC
+				float2 tb[3];
+				tb[0] = b1.xy;
+				tb[1] = b1.zw;
+				tb[2] = b2.xy;
+				td = ComputeTransmittanceTrigonometric(b0, tb, d, _MomentBias, _Overestimation, _WrappingZoneParameters);
+#else
 				float3 be = float3(b1.yw, b2.y);
 				float3 bo = float3(b1.xz, b2.x);
 
 				const float bias[6] = { 0, 0.48, 0, 0.451, 0, 0.45 };
 				td = ComputeTransmittance(b0, be, bo, d, _MomentBias, _Overestimation, bias);
+#endif
+#else
+#ifdef _TRIGONOMETRIC
+				float2 tb[2];
+				tb[0] = b1.xy;
+				tb[1] = b1.zw;
+				td = ComputeTransmittanceTrigonometric(b0, tb, d, _MomentBias, _Overestimation, _WrappingZoneParameters);
 #else
 				float2 be = b1.yw;
 				float2 bo = b1.xz;
 
 				const float4 bias = float4 (0, 0.375, 0, 0.375);
 				td = ComputeTransmittance(b0, be, bo, d, _MomentBias, _Overestimation, bias);
+#endif
 #endif
 			}
 			struct Output
@@ -248,6 +296,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 
 				float td, tt;
 				ResolveMoments(td, tt, input.positionCS.w, input.positionCS.xy * _B0_TexelSize.xy);
+				
 
 #ifdef _DEEP_SHADOW_MAPS
 				half3 gial;

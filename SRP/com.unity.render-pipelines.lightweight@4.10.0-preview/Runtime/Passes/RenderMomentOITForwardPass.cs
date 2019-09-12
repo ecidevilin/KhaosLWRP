@@ -28,6 +28,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         Vector2 _ViewDepthMinMax;
 
+        bool _Trigonometric = false;
+
         public RenderMomentOITForwardPass()
         {
             RegisterShaderPassName("GenerateMoments");
@@ -291,6 +293,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 CoreUtils.SetKeyword(cmd, "_MOMENT6", MomentsCount._6 == _MomentsCount);
                 CoreUtils.SetKeyword(cmd, "_MOMENT8", MomentsCount._8 == _MomentsCount);
                 CoreUtils.SetKeyword(cmd, "_MOMENT_HALF_PRECISION", FloatPrecision._Half == _MomentsPrecision);
+                CoreUtils.SetKeyword(cmd, "_TRIGONOMETRIC", _Trigonometric);
 
                 cmd.SetRenderTarget(_GMBinding);
                 cmd.ClearRenderTarget(false, true, Color.black);
@@ -301,8 +304,24 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 Vector2 logViewDepthMinDelta = new Vector2(Mathf.Log(_ViewDepthMinMax.x), Mathf.Log(_ViewDepthMinMax.y));
                 logViewDepthMinDelta.y = logViewDepthMinDelta.y - logViewDepthMinDelta.x;
                 cmd.SetGlobalVector("_LogViewDepthMinDelta", logViewDepthMinDelta);
-                cmd.SetGlobalFloat("_Overestimation", 0.25f);
-                cmd.SetGlobalFloat("_MomentBias", 0);
+                //cmd.SetGlobalFloat("_Overestimation", 0.25f);
+                //cmd.SetGlobalFloat("_MomentBias", 0);
+
+                if (_Trigonometric)
+                {
+                    Vector4 _WrappingZoneParameters = new Vector4();
+                    _WrappingZoneParameters.x = 3.14f;
+                    _WrappingZoneParameters.y = 3.14f - 0.5f * _WrappingZoneParameters.x;
+                    float a = _WrappingZoneParameters.y * 2;
+                    float x = Mathf.Cos(a);
+                    float y = Mathf.Sin(a);
+                    float r = Mathf.Abs(y) - Mathf.Abs(x);
+                    r = (x < 0) ? (2.0f - r) : r;
+                    r = (y < 0) ? (6.0f - r) : r;
+                    _WrappingZoneParameters.z = 1 / (7 - r);
+                    _WrappingZoneParameters.w = 1 - 7 * _WrappingZoneParameters.z;
+                    cmd.SetGlobalVector("_WrappingZoneParameters", _WrappingZoneParameters);
+                }
 
                 Camera camera = renderingData.cameraData.camera;
                 var drawSettings = CreateDrawRendererSettings(camera, SortFlags.None, _RendererConfiguration, renderingData.supportsDynamicBatching);
