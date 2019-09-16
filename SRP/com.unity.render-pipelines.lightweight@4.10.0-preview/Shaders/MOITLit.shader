@@ -243,44 +243,7 @@ Shader "Lightweight Render Pipeline/MOITLit"
 			struct Output
 			{
 				float4 moit : COLOR0;
-#ifdef _DEEP_SHADOW_MAPS
-				float3 gial : COLOR1;
-#endif
 			};
-
-			half4 LightweightFragmentPBRWithGISeparated(InputData inputData, half3 albedo, half metallic, half3 specular,
-				half smoothness, half occlusion, half3 emission, half alpha, out half3 gial)
-			{
-				BRDFData brdfData;
-				InitializeBRDFData(albedo, metallic, specular, smoothness, alpha, brdfData);
-
-#if defined(_MAIN_CHARACTER_SHADOWS) || defined(_DEEP_SHADOW_MAPS)
-				Light mainLight = GetMainLight(inputData.shadowCoord, inputData.shadowCoord2, inputData.shadowCoord3);
-#else
-				Light mainLight = GetMainLight(inputData.shadowCoord);
-#endif
-
-				MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI, half4(0, 0, 0, 0));
-
-				gial = GlobalIllumination(brdfData, inputData.bakedGI, occlusion, inputData.normalWS, inputData.viewDirectionWS);
-				half3 color = LightingPhysicallyBased(brdfData, mainLight, inputData.normalWS, inputData.viewDirectionWS);
-
-#ifdef _ADDITIONAL_LIGHTS
-				int pixelLightCount = GetAdditionalLightsCount();
-				for (int i = 0; i < pixelLightCount; ++i)
-				{
-					Light light = GetAdditionalLight(i, inputData.positionWS);
-					gial += LightingPhysicallyBased(brdfData, light, inputData.normalWS, inputData.viewDirectionWS);
-				}
-#endif
-
-#ifdef _ADDITIONAL_LIGHTS_VERTEX
-				gial += inputData.vertexLighting * brdfData.diffuse;
-#endif
-
-				gial += emission;
-				return half4(color, alpha);
-			}
 
 			Output MOITLitFragment(Varyings input)
 			{
@@ -297,27 +260,13 @@ Shader "Lightweight Render Pipeline/MOITLit"
 				float td, tt;
 				ResolveMoments(td, tt, input.positionCS.w, input.positionCS.xy * _B0_TexelSize.xy);
 				
-
-#ifdef _DEEP_SHADOW_MAPS
-				half3 gial;
-				half4 color = LightweightFragmentPBRWithGISeparated(inputData, surfaceData.albedo, surfaceData.metallic,
-					surfaceData.specular, surfaceData.smoothness, surfaceData.occlusion, surfaceData.emission, surfaceData.alpha
-					, gial);
-#else
 				half4 color = LightweightFragmentPBR(inputData, surfaceData.albedo, surfaceData.metallic,
 					surfaceData.specular, surfaceData.smoothness, surfaceData.occlusion, surfaceData.emission, surfaceData.alpha);
-#endif
 
 				color.rgb = MixFog(color.rgb, inputData.fogCoord);
 				color.rgb *= color.a;
 				color *= td;
 				o.moit = color;
-
-#ifdef _DEEP_SHADOW_MAPS
-				gial = MixFog(gial, inputData.fogCoord);
-				gial *= color.a * td;
-				o.gial = gial;
-#endif
 				return o;
 			}
 

@@ -56,25 +56,14 @@ Shader "Hidden/Lightweight Render Pipeline/MOITComposite"
             #pragma vertex Vertex
             #pragma fragment FragMOITComposite
 
-			#pragma multi_compile _ _DEEP_SHADOW_MAPS
-
 			TEXTURE2D(_MOIT);
 			SAMPLER(sampler_MOIT);
-#ifdef _DEEP_SHADOW_MAPS
-			TEXTURE2D(_GIAL);
-			SAMPLER(sampler_GIAL);
-#endif
 			TEXTURE2D_FLOAT(_b0);
 			SAMPLER(sampler_b0);
 
             half4 FragMOITComposite(Varyings input) : SV_Target
             {
 				float4 moit = SAMPLE_TEXTURE2D(_MOIT, sampler_MOIT, input.uv.xy);
-#ifdef _DEEP_SHADOW_MAPS
-				half dsmAtten = SAMPLE_TEXTURE2D(_DeepShadowLut, sampler_DeepShadowLut, input.uv.xy).r;
-				moit.rgb *= dsmAtten;
-				moit.rgb += SAMPLE_TEXTURE2D(_GIAL, sampler_GIAL, input.uv.xy).rgb;
-#endif
 				moit.rgb /= moit.a;
 
 				float b0 = SAMPLE_TEXTURE2D(_b0, sampler_b0, input.uv.xy).r;

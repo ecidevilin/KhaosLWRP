@@ -235,7 +235,7 @@ half MainLightRealtimeShadow(float4 shadowCoord)
 
 half MainLightRealtimeShadow(float4 shadowCoord, float4 shadowCoord2, float4 shadowCoord3)
 {
-#if (!defined(_MAIN_LIGHT_SHADOWS) && !defined(_MAIN_CHARACTER_SHADOWS)) || defined(_RECEIVE_SHADOWS_OFF)
+#if (!defined(_MAIN_LIGHT_SHADOWS) && !defined(_MAIN_CHARACTER_SHADOWS) && !defined(_DEEP_SHADOW_MAPS)) || defined(_RECEIVE_SHADOWS_OFF)
 	return 1.0h;
 #endif
 
