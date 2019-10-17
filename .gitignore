@@ -1,7 +1,6 @@
 .vs/
 Debug/
 Library/
-ProjectSettings/
 Temp/
 UnityPackageManager/
 *.csproj
